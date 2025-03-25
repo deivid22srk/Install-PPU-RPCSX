@@ -9,10 +9,10 @@
             "https://drive.google.com/file/d/1Sr8Q2LwyB0npxfv1GsbLo0k83BneCmBw/view?usp=drivesdk"
         ],
         "installation_guide": [
-            "Download both PPU files using the Download buttons",
-            "Copy files to /dev_hdd0/cache/ directory in your RPCS3 installation",
-            "Set SPU Decoder to Recompiler (ASMJIT) in RPCS3 settings",
-            "Configure additional graphics settings for optimal performance"
+            "install firmware 4.91 normally after installing when rpcs3 starts compiling the firmware ppu close the app",
+            "Open the App Install ppu rpcs3 and Click on install ppu modules",
+            "Browse for the PPU FIRMWARE 4.91.zip file and select",
+            "Now a dialog should appear. You must click on select, then go to rpcs3 and click on select folder."
         ]
     },
     {
