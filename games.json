@@ -1,35 +1,104 @@
 [
-  {
-    "id": "BLUS12345",
-    "title": "God of War 3",
-    "region": "USA",
-    "description": "God of War III é um jogo de ação e aventura onde Kratos busca vingança contra os deuses do Olimpo.",
-    "uris": [
-      "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS12345_1.ppu",
-      "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS12345_2.ppu"
-    ],
-    "cover": "https://seuusuario.github.io/meu-repo-gh-pages/covers/god_of_war_3.jpg",
-    "genre": "Ação, Hack and Slash",
-    "developer": "Santa Monica Studio",
-    "release_year": 2010,
-    "compatibility": "Jogável",
-    "ppu_size": "15MB",
-    "rpcs3_wiki": "https://wiki.rpcs3.net/index.php?title=God_of_War_III"
-  },
-  {
-    "id": "BLES67890",
-    "title": "Uncharted 2: Among Thieves",
-    "region": "EU",
-    "description": "Uncharted 2: Among Thieves segue Nathan Drake em uma jornada épica em busca do mítico Vale de Shambhala.",
-    "uris": [
-      "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLES67890_1.ppu"
-    ],
-    "cover": "https://seuusuario.github.io/meu-repo-gh-pages/covers/uncharted_2.jpg",
-    "genre": "Ação, Aventura",
-    "developer": "Naughty Dog",
-    "release_year": 2009,
-    "compatibility": "Lento",
-    "ppu_size": "12MB",
-    "rpcs3_wiki": "https://wiki.rpcs3.net/index.php?title=Uncharted_2:_Among_Thieves"
-  }
+    {
+        "id": "BLUS12345",
+        "title": "God of War 3",
+        "region": "USA",
+        "uris": [
+            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS12345_1.ppu",
+            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS12345_2.ppu"
+        ],
+        "cover": "https://upload.wikimedia.org/wikipedia/en/a/a0/God_of_War_III_cover_art.jpg",
+        "ppu_size": "15MB",
+        "installation_guide": [
+            "Download both PPU files using the Download buttons",
+            "Place files in RPCS3 directory: /dev_hdd0/cache/",
+            "Restart RPCS3 before launching the game",
+            "Check for a performance improvement when the game starts"
+        ]
+    },
+    {
+        "id": "BLES67890",
+        "title": "Uncharted 2: Among Thieves",
+        "region": "EU",
+        "uris": [
+            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLES67890_1.ppu"
+        ],
+        "cover": "https://upload.wikimedia.org/wikipedia/en/3/3d/Uncharted_2_box_artwork.jpg",
+        "ppu_size": "12MB",
+        "installation_guide": [
+            "Download the PPU file using the Download button",
+            "Place the file in your RPCS3 folder: /dev_hdd0/cache/",
+            "Verify file integrity through RPCS3's File Manager",
+            "Launch the game and enjoy improved performance"
+        ]
+    },
+    {
+        "id": "BLUS30712",
+        "title": "The Last of Us",
+        "region": "USA",
+        "uris": [
+            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS30712_1.ppu",
+            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS30712_2.ppu"
+        ],
+        "cover": "https://upload.wikimedia.org/wikipedia/en/4/46/Video_Game_Cover_-_The_Last_of_Us.jpg",
+        "ppu_size": "18MB",
+        "installation_guide": [
+            "Download both PPU files using the Download buttons",
+            "Copy files to /dev_hdd0/cache/ directory in your RPCS3 installation",
+            "Set SPU Decoder to Recompiler (ASMJIT) in RPCS3 settings",
+            "Configure additional graphics settings for optimal performance"
+        ]
+    },
+    {
+        "id": "BCES00510",
+        "title": "Heavy Rain",
+        "region": "EU",
+        "uris": [
+            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BCES00510_1.ppu"
+        ],
+        "cover": "https://upload.wikimedia.org/wikipedia/en/thumb/7/77/Heavy_Rain_Cover_Art.jpg/220px-Heavy_Rain_Cover_Art.jpg",
+        "ppu_size": "10MB",
+        "installation_guide": [
+            "Download the PPU file to your computer",
+            "Transfer the file to RPCS3's cache folder (/dev_hdd0/cache/)",
+            "Make sure Write Color Buffers is enabled in RPCS3 settings",
+            "Start the game and verify PPU cache loading in log window"
+        ]
+    },
+    {
+        "id": "BLUS30481",
+        "title": "Red Dead Redemption",
+        "region": "USA",
+        "uris": [
+            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS30481_1.ppu",
+            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS30481_2.ppu"
+        ],
+        "cover": "https://upload.wikimedia.org/wikipedia/en/a/a7/Red_Dead_Redemption.jpg",
+        "ppu_size": "20MB",
+        "installation_guide": [
+            "Download both required PPU files",
+            "Place them in RPCS3's /dev_hdd0/cache/ directory",
+            "Enable Accurate xfloat option in RPCS3 advanced CPU settings",
+            "Set Anisotropic Filter to 16x for best visuals"
+        ]
+    },
+    {
+        "id": "BLUS30764",
+        "title": "Grand Theft Auto V",
+        "region": "USA",
+        "uris": [
+            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS30764_1.ppu",
+            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS30764_2.ppu",
+            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS30764_3.ppu"
+        ],
+        "cover": "https://upload.wikimedia.org/wikipedia/en/a/a5/Grand_Theft_Auto_V.png",
+        "ppu_size": "25MB",
+        "installation_guide": [
+            "Download all three PPU files required for this game",
+            "Place files in /dev_hdd0/cache/ folder within your RPCS3 installation",
+            "Configure RPCS3 with recommended GTA V settings (Resolution Scale: 150%, SPU Threads: 2)",
+            "Verify all files are loaded before launching the game",
+            "Set Frame Limit to 30 FPS for best stability"
+        ]
+    }
 ]
