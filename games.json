@@ -30,5 +30,21 @@
             "Select the ppu file in .zip format that you downloaded",
             "Now a dialog should appear with some information, you must click on select, choose rpcs3 and select the folder "
         ]
+    },
+    {
+        "id": "NPUB31729",
+        "title": "Saint Seiya Soldiers' Soul",
+        "region": "USA",
+        "cover": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXOdL4Mc2lWn7tmybBszWX_ApCJ2L7cq8LnolA4G3uYCn9qUrfrQde8Zlk&s=10",
+        "ppu_size": "24MB",
+        "uris": [
+            "https://drive.google.com/file/d/1qhT-Eixhrx_Ffd_CvuEHW8_SiF1KAT-X/view?usp=drivesdk"
+        ],
+        "installation_guide": [
+            "Download the required PPU file",
+            "Open the Install ppu rpcs3 App and Click on install ppu modules",
+            "Select the ppu file in .zip format that you downloaded",
+            "Now a dialog should appear with some information, you must click on select, choose rpcs3 and select the folder"
+        ]
     }
 ]
