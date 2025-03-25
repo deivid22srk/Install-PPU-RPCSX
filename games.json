@@ -17,22 +17,6 @@
         ]
     },
     {
-        "id": "BCES00510",
-        "title": "Heavy Rain",
-        "region": "EU",
-        "uris": [
-            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BCES00510_1.ppu"
-        ],
-        "cover": "https://upload.wikimedia.org/wikipedia/en/thumb/7/77/Heavy_Rain_Cover_Art.jpg/220px-Heavy_Rain_Cover_Art.jpg",
-        "ppu_size": "10MB",
-        "installation_guide": [
-            "Download the PPU file to your computer",
-            "Transfer the file to RPCS3's cache folder (/dev_hdd0/cache/)",
-            "Make sure Write Color Buffers is enabled in RPCS3 settings",
-            "Start the game and verify PPU cache loading in log window"
-        ]
-    },
-    {
         "id": "BLUS30481",
         "title": "Red Dead Redemption",
         "region": "USA",
