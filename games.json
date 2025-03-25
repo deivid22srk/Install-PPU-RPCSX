@@ -1,0 +1,35 @@
+[
+  {
+    "id": "BLUS12345",
+    "title": "God of War 3",
+    "region": "USA",
+    "description": "God of War III é um jogo de ação e aventura onde Kratos busca vingança contra os deuses do Olimpo.",
+    "uris": [
+      "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS12345_1.ppu",
+      "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS12345_2.ppu"
+    ],
+    "cover": "https://seuusuario.github.io/meu-repo-gh-pages/covers/god_of_war_3.jpg",
+    "genre": "Ação, Hack and Slash",
+    "developer": "Santa Monica Studio",
+    "release_year": 2010,
+    "compatibility": "Jogável",
+    "ppu_size": "15MB",
+    "rpcs3_wiki": "https://wiki.rpcs3.net/index.php?title=God_of_War_III"
+  },
+  {
+    "id": "BLES67890",
+    "title": "Uncharted 2: Among Thieves",
+    "region": "EU",
+    "description": "Uncharted 2: Among Thieves segue Nathan Drake em uma jornada épica em busca do mítico Vale de Shambhala.",
+    "uris": [
+      "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLES67890_1.ppu"
+    ],
+    "cover": "https://seuusuario.github.io/meu-repo-gh-pages/covers/uncharted_2.jpg",
+    "genre": "Ação, Aventura",
+    "developer": "Naughty Dog",
+    "release_year": 2009,
+    "compatibility": "Lento",
+    "ppu_size": "12MB",
+    "rpcs3_wiki": "https://wiki.rpcs3.net/index.php?title=Uncharted_2:_Among_Thieves"
+  }
+]
