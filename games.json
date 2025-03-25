@@ -1,21 +1,5 @@
 [
     {
-        "id": "BLES67890",
-        "title": "Uncharted 2: Among Thieves",
-        "region": "EU",
-        "uris": [
-            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLES67890_1.ppu"
-        ],
-        "cover": "https://upload.wikimedia.org/wikipedia/en/3/3d/Uncharted_2_box_artwork.jpg",
-        "ppu_size": "12MB",
-        "installation_guide": [
-            "Download the PPU file using the Download button",
-            "Place the file in your RPCS3 folder: /dev_hdd0/cache/",
-            "Verify file integrity through RPCS3's File Manager",
-            "Launch the game and enjoy improved performance"
-        ]
-    },
-    {
         "id": "BLUS30712",
         "title": "The Last of Us",
         "region": "USA",
