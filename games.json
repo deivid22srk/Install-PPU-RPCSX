@@ -16,39 +16,19 @@
         ]
     },
     {
-        "id": "BLUS30481",
+        "id": "NPEB00833",
         "title": "Red Dead Redemption",
         "region": "USA",
-        "uris": [
-            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS30481_1.ppu",
-            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS30481_2.ppu"
-        ],
         "cover": "https://upload.wikimedia.org/wikipedia/en/a/a7/Red_Dead_Redemption.jpg",
-        "ppu_size": "20MB",
-        "installation_guide": [
-            "Download both required PPU files",
-            "Place them in RPCS3's /dev_hdd0/cache/ directory",
-            "Enable Accurate xfloat option in RPCS3 advanced CPU settings",
-            "Set Anisotropic Filter to 16x for best visuals"
-        ]
-    },
-    {
-        "id": "BLUS30764",
-        "title": "Grand Theft Auto V",
-        "region": "USA",
+        "ppu_size": "43MB",
         "uris": [
-            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS30764_1.ppu",
-            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS30764_2.ppu",
-            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS30764_3.ppu"
+            "https://drive.google.com/file/d/1ezhN4FGO88JfW60ks7H1EQOrc395kvyj/view?usp=drivesdk"
         ],
-        "cover": "https://upload.wikimedia.org/wikipedia/en/a/a5/Grand_Theft_Auto_V.png",
-        "ppu_size": "25MB",
         "installation_guide": [
-            "Download all three PPU files required for this game",
-            "Place files in /dev_hdd0/cache/ folder within your RPCS3 installation",
-            "Configure RPCS3 with recommended GTA V settings (Resolution Scale: 150%, SPU Threads: 2)",
-            "Verify all files are loaded before launching the game",
-            "Set Frame Limit to 30 FPS for best stability"
+            "Download the required PPU file",
+            "Open the Install ppu rpcs3 App and Click on install ppu modules",
+            "Select the ppu file in .zip format that you downloaded",
+            "Now a dialog should appear with some information, you must click on select, choose rpcs3 and select the folder "
         ]
     }
 ]
