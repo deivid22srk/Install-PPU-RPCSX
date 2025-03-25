@@ -1,22 +1,5 @@
 [
     {
-        "id": "BLUS12345",
-        "title": "God of War 3",
-        "region": "USA",
-        "uris": [
-            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS12345_1.ppu",
-            "https://seuusuario.github.io/meu-repo-gh-pages/ppu/BLUS12345_2.ppu"
-        ],
-        "cover": "https://upload.wikimedia.org/wikipedia/en/a/a0/God_of_War_III_cover_art.jpg",
-        "ppu_size": "15MB",
-        "installation_guide": [
-            "Download both PPU files using the Download buttons",
-            "Place files in RPCS3 directory: /dev_hdd0/cache/",
-            "Restart RPCS3 before launching the game",
-            "Check for a performance improvement when the game starts"
-        ]
-    },
-    {
         "id": "BLES67890",
         "title": "Uncharted 2: Among Thieves",
         "region": "EU",
