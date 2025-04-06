@@ -148,5 +148,16 @@
             "https://archive.org/download/install-ppu-games/NPEB02382_NITROPLUS%20BLASTERZ%20-HEROINES%20INFINITE%20DUEL-.zip"
         ],
         "installation_guide": []
+    },
+    {
+        "id": "NPUB30957",
+        "title": "GUILTY GEAR XX Λ CORE PLUS",
+        "region": "USA",
+        "cover": "https://raw.githubusercontent.com/aldostools/Resources/refs/heads/main/COV/NPUB30957.JPG",
+        "ppu_size": "6.65 MB",
+        "uris": [
+            "https://archive.org/download/install-ppu-games/NPUB30957_GUILTY%20GEAR%20XX%20%CE%9B%20CORE%20PLUS.zip"
+        ],
+        "installation_guide": []
     }
 ]
