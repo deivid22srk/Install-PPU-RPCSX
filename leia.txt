@@ -1,0 +1,193 @@
+1. crie os arquivos build.gladle com todos a URL implementation que esse projeto precisa para compilar
+
+1. nesse projeto tá faltando as telas nada infla ela não tem um layout então crie os layout em material com telas fragment e botãonavigation
+
+como você pode ver tem uma lógica para instalar a ppu e e como nesse exemplo 
+
+
+oncreat:
+
+
+        setContentView(R.layout.activity_community);
+
+        RecyclerView recyclerView = findViewById(R.id.recycler_view_games);
+        ProgressBar progressBar = findViewById(R.id.progressBar);
+        EditText searchEditText = findViewById(R.id.search_edit_text);
+        TextView statusText = findViewById(R.id.statusText);
+
+        // Criar o objeto de fetcher
+        CommunityFetcher fetcher = new CommunityFetcher(this, recyclerView, progressBar, searchEditText);
+
+        // Iniciar o carregamento dos dados
+        fetcher.fetchData();
+    
+    
+OnActiveResult:
+
+
+if (_resultCode == RESULT_OK && _data != null) {
+    if (_requestCode == 1) { // REQUEST_FILE_PICKER
+        selectedFilePath = _data.getData().toString();
+
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(_data.getData());
+            final FastZipExtractor fastZipExtractor = new FastZipExtractor(CommunityActivity.this);
+
+            fastZipExtractor.processFile(inputStream, selectedFilePath, new FastZipExtractor.Callback() {
+                @Override
+                public void onJsonProcessed(final String type, final String description, List<FastZipExtractor.FileEntry> files) {
+                    runOnUiThread(() -> {
+                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(CommunityActivity.this)
+                                .setTitle("Confirmação")
+                                .setMessage("Type: " + type + "\nDescription: " + description + "\n\nDeseja extrair para a pasta do RPCS3?")
+                                .setPositiveButton("Extrair", (dialog, which) -> {
+                                    // Obter a URI do SharedPreferences
+                                    SharedPreferences rpcs3Prefs = getSharedPreferences("RPCS3Prefs", MODE_PRIVATE);
+                                    final String targetDirUri = rpcs3Prefs.getString("folder_uri", null);
+
+                                    if (targetDirUri == null) {
+                                        ((TextView) findViewById(R.id.statusText)).setText("Erro: Pasta do RPCS3 não configurada");
+                                        return;
+                                    }
+
+                                    // Continuar com a extração usando a URI obtida
+                                    final FastZipExtractor fastZipExtractor = new FastZipExtractor(CommunityActivity.this);
+
+                                    try {
+                                        getContentResolver().takePersistableUriPermission(Uri.parse(targetDirUri),
+                                                Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                                    } catch (Exception e) {
+                                        ((TextView) findViewById(R.id.statusText)).setText("Falha ao persistir permissão: " + e.getMessage());
+                                        return;
+                                    }
+
+                                    // Criando um MaterialAlertDialogBuilder para o progresso
+                                    MaterialAlertDialogBuilder progressDialogBuilder = new MaterialAlertDialogBuilder(CommunityActivity.this);
+
+                                    // Inflando o layout personalizado
+                                    View progressView = LayoutInflater.from(CommunityActivity.this).inflate(R.layout.progress_dialog_layout, null);
+                                    progressDialogBuilder.setView(progressView);
+                                    progressDialogBuilder.setCancelable(false);
+
+                                    // Configurando os elementos do layout
+                                    MaterialTextView progressTitle = progressView.findViewById(R.id.progressTitle);
+                                    MaterialTextView progressMessage = progressView.findViewById(R.id.progressMessage);
+                                    LinearProgressIndicator progressBar = progressView.findViewById(R.id.progressBar);
+
+                                    progressTitle.setText("Extraindo Arquivos");
+                                    progressMessage.setText("Aguarde enquanto os arquivos são extraídos...");
+                                    progressBar.setMax(100);
+                                    progressBar.setProgress(0);
+
+                                    // Criando e exibindo o diálogo
+                                    final AlertDialog customProgressDialog = progressDialogBuilder.create();
+                                    customProgressDialog.show();
+
+                                    BroadcastReceiver progressReceiver = new BroadcastReceiver() {
+                                        @Override
+                                        public void onReceive(Context context, Intent intent) {
+                                            String action = intent.getAction();
+                                            if (action == null) return;
+
+                                            if (FastZipExtractor.ACTION_PROGRESS_UPDATE.equals(action)) {
+                                                int current = intent.getIntExtra(FastZipExtractor.EXTRA_CURRENT, 0);
+                                                int total = intent.getIntExtra(FastZipExtractor.EXTRA_TOTAL, 1);
+                                                int progress = (int) ((current * 100) / total);
+                                                progressBar.setProgress(progress);
+                                            } else if (FastZipExtractor.ACTION_EXTRACTION_COMPLETE.equals(action)) {
+                                                customProgressDialog.dismiss();
+                                                final String modId = intent.getStringExtra(FastZipExtractor.EXTRA_MOD_ID);
+
+                                                SharedPreferences tempPrefs = getSharedPreferences("TempModData", MODE_PRIVATE);
+                                                final String type = tempPrefs.getString("temp_type", "Unknown");
+                                                final String description = tempPrefs.getString("temp_description", "No description");
+
+                                                SharedPreferences prefs = getSharedPreferences("InstalledMods", MODE_PRIVATE);
+                                                SharedPreferences.Editor editor = prefs.edit();
+                                                editor.putString(modId + "_type", type);
+                                                editor.putString(modId + "_description", description);
+                                                editor.putString(modId + "_targetDir", targetDirUri);
+                                                editor.putString(modId + "_files", String.join(",", extractedFiles));
+                                                editor.apply();
+
+                                                SharedPreferences downloadPrefs = getSharedPreferences("DownloadPrefs", MODE_PRIVATE);
+                                                downloadPrefs.edit().putBoolean(modId + "_installed", true).apply();
+
+                                                // Atualizar apenas o item no RecyclerView sem recarregar todos os dados
+                                                RecyclerView recyclerView = findViewById(R.id.recycler_view_games);
+                                                CommunityFetcher fetcher = new CommunityFetcher(CommunityActivity.this, recyclerView,
+                                                        findViewById(R.id.progressBar), findViewById(R.id.search_edit_text));
+                                                for (int i = 0; i < fetcher.getGameListSize(); i++) {
+                                                    try {
+                                                        JSONObject game = fetcher.getGameAt(i);
+                                                        if (game.getString("id").equals(modId)) {
+                                                            fetcher.notifyItemChanged(i);
+                                                            break;
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+
+                                                // Limpar dados temporários
+                                                editor = tempPrefs.edit();
+                                                editor.clear();
+                                                editor.apply();
+                                            } else if (FastZipExtractor.ACTION_EXTRACTION_ERROR.equals(action)) {
+                                                customProgressDialog.dismiss();
+                                                String error = intent.getStringExtra(FastZipExtractor.EXTRA_ERROR);
+                                                ((TextView) findViewById(R.id.statusText)).setText("Erro ao extrair: " + error);
+                                            }
+                                        }
+                                    };
+
+                                    IntentFilter filter = new IntentFilter();
+                                    filter.addAction(FastZipExtractor.ACTION_PROGRESS_UPDATE);
+                                    filter.addAction(FastZipExtractor.ACTION_EXTRACTION_COMPLETE);
+                                    filter.addAction(FastZipExtractor.ACTION_EXTRACTION_ERROR);
+
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                        registerReceiver(progressReceiver, filter, Context.RECEIVER_EXPORTED);
+                                    } else {
+                                        registerReceiver(progressReceiver, filter);
+                                    }
+
+                                    fastZipExtractor.startExtractionWithForegroundService(targetDirUri, extractedFiles, selectedFilePath);
+                                })
+                                .setNegativeButton("Cancelar", null);
+
+                        AlertDialog dialog = builder.create();
+                        dialog.setOnShowListener(dialogInterface -> {
+                            Button positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                            Button negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+                            positiveButton.setTextColor(Color.WHITE);
+                            negativeButton.setTextColor(Color.WHITE);
+                        });
+
+                        dialog.show();
+                    });
+
+                    extractedFiles = new ArrayList<>();
+                    for (FastZipExtractor.FileEntry entry : files) {
+                        extractedFiles.add(entry.source + "|" + entry.target);
+                    }
+                    SharedPreferences prefs = getSharedPreferences("TempModData", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString("temp_type", type);
+                    editor.putString("temp_description", description);
+                    editor.apply();
+                }
+
+                @Override
+                public void onError(final String error) {
+                    runOnUiThread(() -> ((TextView) findViewById(R.id.statusText)).setText("Erro: " + error));
+                }
+            });
+        } catch (Exception e) {
+            ((TextView) findViewById(R.id.statusText)).setText("Erro ao abrir arquivo: " + e.getMessage());
+        }
+    }
+}
+
+
+não quero mais esses sistema de download de jogos/ppu

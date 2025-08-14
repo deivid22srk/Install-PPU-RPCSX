@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_backup"
+            android:icon="@android:drawable/ic_menu_save"
+            android:title="Backup PPU GAMES" />
+        <item
+            android:id="@+id/nav_community"
+            android:icon="@android:drawable/ic_menu_share"
+            android:title="COMMUNITY PPU" />
+        <item
+            android:id="@+id/nav_ps3_redump"
+            android:icon="@drawable/ic_download"  
+            android:title="PS3 Redump Downloader" />
+        <item
+            android:id="@+id/nav_creator"
+            android:icon="@android:drawable/ic_menu_info_details"
+            android:title="Criado por: Hailgames" />
+    </group>
+</menu>

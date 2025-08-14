@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+  <!-- Base application theme. -->
+  <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
+    <!--
+      ANTES (causando o erro):
+      <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
+      ou
+      <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    -->
+
+    <!-- Customize your theme here. -->
+    <!-- Você pode definir cores primárias, secundárias, etc., se quiser substituir o padrão M3 -->
+    <!-- Exemplo:
+    <item name="colorPrimary">@color/my_light_primary</item>
+    <item name="colorOnPrimary">@color/my_light_onPrimary</item>
+    ... etc ...
+    -->
+  </style>
+</resources>
