@@ -924,7 +924,8 @@ public class GamesFragment extends Fragment {
         // Game image/icon with Material You styling
         ImageView imageView = new ImageView(getContext());
         LinearLayout.LayoutParams imageParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT, 180);
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        imageView.setAdjustViewBounds(true);
         imageView.setLayoutParams(imageParams);
         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         
@@ -1027,8 +1028,7 @@ public class GamesFragment extends Fragment {
         backupButton.setPadding(24, 16, 24, 16);
         
         if (hasPPUs) {
-            int fileCount = RPCS3Helper.countGamePPUFiles(getContext(), game.id);
-            backupButton.setText("FAZER BACKUP (" + fileCount + " arquivos)");
+            backupButton.setText("FAZER BACKUP");
             backupButton.setBackgroundColor(Color.parseColor("#6750A4")); // Material You primary
             backupButton.setTextColor(Color.parseColor("#FFFFFF")); // Material You on-primary
         } else {
