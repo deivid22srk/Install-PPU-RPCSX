@@ -5,29 +5,34 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.core.content.ContextCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.my.newproject118.BackupService;
 import com.my.newproject118.MainActivity;
+import com.my.newproject118.R;
 import com.my.newproject118.RPCS3Helper;
 
 import java.io.ByteArrayOutputStream;
@@ -45,272 +50,120 @@ public class GamesFragment extends Fragment {
     private static final String PREFS_NAME = "RPCS3Prefs";
     private static final String PREF_FOLDER_URI = "folder_uri";
     
-    private MainActivity mainActivity;
-    private LinearLayout tabContainer;
-    private LinearLayout gamesContainer;
-    private EditText searchInput;
-    private Button tabJogos, tabPPUs;
-    private boolean showingGames = true;
+    // Views
+    private MaterialButton tabJogos, tabPPUs;
+    private TextInputEditText searchInput;
+    private RecyclerView gamesRecycler;
+    private View loadingContainer, emptyContainer;
+    private TextView loadingText, emptyTitle, emptyMessage;
     
-    // Game loading
+    // Data
+    private boolean showingGames = true;
     private List<GameItem> gameList = new ArrayList<>();
     private List<GameItem> filteredGameList = new ArrayList<>();
+    private GamesAdapter adapter;
     private BroadcastReceiver backupReceiver;
-    private SharedPreferences prefs;
-    
-    // Inner classes
-    private static class ParamSfoData {
-        String title;
-        String appVer;
-        String version;
-
-        ParamSfoData(String title, String appVer, String version) {
-            this.title = title;
-            this.appVer = appVer;
-            this.version = version;
-        }
-    }
-    
-    private static class GameItem {
-        String title;
-        String id;
-        String appVer;
-        String version;
-        Uri iconUri;
-
-        GameItem(String title, String id, String appVer, String version, Uri iconUri) {
-            this.title = title;
-            this.id = id;
-            this.appVer = appVer;
-            this.version = version;
-            this.iconUri = iconUri;
-        }
-    }
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.d(TAG, "=== GamesFragment (REAL SYSTEM) created ===");
+        View view = inflater.inflate(R.layout.fragment_games, container, false);
         
-        mainActivity = (MainActivity) getActivity();
+        initViews(view);
+        setupRecyclerView();
+        setupTabs();
+        setupSearch();
         
-        // Initialize SharedPreferences
-        prefs = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        // Set initial state to loading
+        showLoading();
         
-        // Create main layout with Material You background
-        LinearLayout mainLayout = new LinearLayout(getContext());
-        mainLayout.setOrientation(LinearLayout.VERTICAL);
-        mainLayout.setBackgroundColor(Color.parseColor("#0F0D13")); // Material You dark background
-        mainLayout.setPadding(0, 0, 0, 0);
+        // Start with games
+        switchToGames();
         
-        // Create tab container
-        createTabContainer(mainLayout);
-        
-        // Create search bar
-        createSearchBar(mainLayout);
-        
-        // Create games container
-        createGamesContainer(mainLayout);
-        
-        // Load games/PPUs
-        loadContent();
-        
-        return mainLayout;
+        return view;
     }
     
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Setup backup receiver when fragment becomes active
-        setupBackupReceiver();
+    private void initViews(View view) {
+        // Tab buttons
+        tabJogos = view.findViewById(R.id.tab_jogos);
+        tabPPUs = view.findViewById(R.id.tab_ppus);
+        
+        // Search
+        searchInput = view.findViewById(R.id.search_input);
+        
+        // Content views
+        gamesRecycler = view.findViewById(R.id.games_recycler);
+        loadingContainer = view.findViewById(R.id.loading_container);
+        emptyContainer = view.findViewById(R.id.empty_container);
+        
+        // Text views
+        loadingText = view.findViewById(R.id.loading_text);
+        emptyTitle = view.findViewById(R.id.empty_title);
+        emptyMessage = view.findViewById(R.id.empty_message);
     }
     
-    @Override
-    public void onPause() {
-        super.onPause();
-        // Unregister receiver when fragment is paused
-        if (backupReceiver != null && getContext() != null) {
-            try {
-                getContext().unregisterReceiver(backupReceiver);
-            } catch (IllegalArgumentException e) {
-                // Receiver not registered, ignore
-            }
-        }
+    private void setupRecyclerView() {
+        adapter = new GamesAdapter(gameList, this::onGameBackup);
+        gamesRecycler.setAdapter(adapter);
+        gamesRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
     }
     
-    private void createTabContainer(LinearLayout parent) {
-        tabContainer = new LinearLayout(getContext());
-        tabContainer.setOrientation(LinearLayout.HORIZONTAL);
-        tabContainer.setPadding(20, 20, 20, 20);
-        tabContainer.setBackgroundColor(Color.parseColor("#1C1B1F")); // Material You surface container
-        
-        // Add subtle elevation for Material You depth
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            tabContainer.setElevation(1f);
-        }
-        
-        // Tab JOGOS - Material You 3.0 filled tab
-        tabJogos = new Button(getContext());
-        tabJogos.setText("🎮 JOGOS");
-        tabJogos.setBackgroundResource(android.R.drawable.btn_default);
-        tabJogos.setBackgroundColor(Color.parseColor("#6750A4")); // Material You primary
-        tabJogos.setTextColor(Color.parseColor("#FFFFFF")); // Material You on-primary
-        tabJogos.setPadding(28, 18, 28, 18);
-        tabJogos.setTextSize(14);
-        tabJogos.setTypeface(tabJogos.getTypeface(), android.graphics.Typeface.BOLD);
-        
-        // Add subtle shadow/elevation for active tab
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            tabJogos.setElevation(3f);
-        }
-        
-        LinearLayout.LayoutParams jogosParams = new LinearLayout.LayoutParams(
-            0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-        jogosParams.setMargins(0, 0, 8, 0);
-        tabJogos.setLayoutParams(jogosParams);
+    private void setupTabs() {
         tabJogos.setOnClickListener(v -> switchToGames());
-        
-        // Tab PPUS - Material You 3.0 outlined tab
-        tabPPUs = new Button(getContext());
-        tabPPUs.setText("💾 PPUs");
-        tabPPUs.setBackgroundResource(android.R.drawable.btn_default);
-        tabPPUs.setBackgroundColor(Color.parseColor("#2A2930")); // Material You surface container high
-        tabPPUs.setTextColor(Color.parseColor("#CAC4D0")); // Material You on-surface-variant
-        tabPPUs.setPadding(28, 18, 28, 18);
-        tabPPUs.setTextSize(14);
-        tabPPUs.setTypeface(tabPPUs.getTypeface(), android.graphics.Typeface.NORMAL);
-        
-        LinearLayout.LayoutParams ppusParams = new LinearLayout.LayoutParams(
-            0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-        ppusParams.setMargins(8, 0, 0, 0);
-        tabPPUs.setLayoutParams(ppusParams);
         tabPPUs.setOnClickListener(v -> switchToPPUs());
-        
-        tabContainer.addView(tabJogos);
-        tabContainer.addView(tabPPUs);
-        parent.addView(tabContainer);
     }
     
-    private void createSearchBar(LinearLayout parent) {
-        // Material You 3.0 Search container with elevated surface
-        LinearLayout searchContainer = new LinearLayout(getContext());
-        searchContainer.setOrientation(LinearLayout.HORIZONTAL);
-        searchContainer.setBackgroundColor(Color.parseColor("#1E1B24")); // Material You surface container
-        searchContainer.setPadding(24, 18, 24, 18);
-        
-        // Add subtle elevation for Material You depth
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            searchContainer.setElevation(2f);
-        }
-        
-        LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        containerParams.setMargins(16, 8, 16, 24);
-        searchContainer.setLayoutParams(containerParams);
-        
-        // Material You search icon
-        TextView searchIcon = new TextView(getContext());
-        searchIcon.setText("🔍");
-        searchIcon.setTextSize(20);
-        searchIcon.setPadding(0, 0, 18, 0);
-        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        iconParams.gravity = android.view.Gravity.CENTER_VERTICAL;
-        searchIcon.setLayoutParams(iconParams);
-        
-        searchInput = new EditText(getContext());
-        searchInput.setHint("Pesquisar jogos...");
-        searchInput.setTextColor(Color.parseColor("#E6E0E9")); // Material You on-surface
-        searchInput.setHintTextColor(Color.parseColor("#938F96")); // Material You on-surface-variant
-        searchInput.setBackgroundColor(Color.TRANSPARENT);
-        searchInput.setTextSize(16);
-        // Remove underline
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
-            searchInput.setBackground(null);
-        }
-        LinearLayout.LayoutParams searchParams = new LinearLayout.LayoutParams(
-            0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-        searchParams.gravity = android.view.Gravity.CENTER_VERTICAL;
-        searchInput.setLayoutParams(searchParams);
-        
-        // Add text watcher for real-time search
-        searchInput.addTextChangedListener(new android.text.TextWatcher() {
+    private void setupSearch() {
+        searchInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
+            
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
-
-            @Override
-            public void afterTextChanged(android.text.Editable s) {
-                filterGames(s.toString());
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterGames(s.toString().trim());
             }
+            
+            @Override
+            public void afterTextChanged(Editable s) {}
         });
-        
-        searchContainer.addView(searchIcon);
-        searchContainer.addView(searchInput);
-        parent.addView(searchContainer);
-    }
-    
-    private void createGamesContainer(LinearLayout parent) {
-        gamesContainer = new LinearLayout(getContext());
-        gamesContainer.setOrientation(LinearLayout.VERTICAL);
-        gamesContainer.setPadding(16, 0, 16, 0);
-        parent.addView(gamesContainer);
     }
     
     private void switchToGames() {
+        Log.d(TAG, "switchToGames: Switching to games view");
         showingGames = true;
-        
-        // Material You 3.0 active state with elevation
-        tabJogos.setText("🎮 JOGOS");
-        tabJogos.setBackgroundColor(Color.parseColor("#6750A4")); // Primary
-        tabJogos.setTextColor(Color.parseColor("#FFFFFF")); // On-primary
-        tabJogos.setTypeface(tabJogos.getTypeface(), android.graphics.Typeface.BOLD);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            tabJogos.setElevation(3f);
-        }
-        
-        // Material You 3.0 inactive state
-        tabPPUs.setText("💾 PPUs");
-        tabPPUs.setBackgroundColor(Color.parseColor("#2A2930")); // Surface container high
-        tabPPUs.setTextColor(Color.parseColor("#CAC4D0")); // On-surface-variant
-        tabPPUs.setTypeface(tabPPUs.getTypeface(), android.graphics.Typeface.NORMAL);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            tabPPUs.setElevation(0f);
-        }
-        
-        searchInput.setHint("🔍 Pesquisar jogos...");
+        updateTabAppearance();
+        searchInput.setHint("Pesquisar jogos...");
         loadContent();
     }
     
     private void switchToPPUs() {
         showingGames = false;
-        
-        // Material You 3.0 active state with elevation
-        tabPPUs.setText("💾 PPUs");
-        tabPPUs.setBackgroundColor(Color.parseColor("#6750A4")); // Primary
-        tabPPUs.setTextColor(Color.parseColor("#FFFFFF")); // On-primary
-        tabPPUs.setTypeface(tabPPUs.getTypeface(), android.graphics.Typeface.BOLD);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            tabPPUs.setElevation(3f);
-        }
-        
-        // Material You 3.0 inactive state
-        tabJogos.setText("🎮 JOGOS");
-        tabJogos.setBackgroundColor(Color.parseColor("#2A2930")); // Surface container high
-        tabJogos.setTextColor(Color.parseColor("#CAC4D0")); // On-surface-variant
-        tabJogos.setTypeface(tabJogos.getTypeface(), android.graphics.Typeface.NORMAL);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            tabJogos.setElevation(0f);
-        }
-        
-        searchInput.setHint("🔍 Pesquisar PPUs...");
+        updateTabAppearance();
+        searchInput.setHint("Pesquisar PPUs...");
         loadContent();
     }
     
+    private void updateTabAppearance() {
+        if (showingGames) {
+            // Games tab active - use custom primary color
+            tabJogos.setBackgroundColor(android.graphics.Color.parseColor("#354479"));
+            tabJogos.setTextColor(android.graphics.Color.parseColor("#FFFFFF"));
+            
+            // PPUs tab inactive - use custom secondary color
+            tabPPUs.setBackgroundColor(android.graphics.Color.parseColor("#34343A"));
+            tabPPUs.setTextColor(android.graphics.Color.parseColor("#CCCCCC"));
+        } else {
+            // PPUs tab active - use custom primary color
+            tabPPUs.setBackgroundColor(android.graphics.Color.parseColor("#354479"));
+            tabPPUs.setTextColor(android.graphics.Color.parseColor("#FFFFFF"));
+            
+            // Games tab inactive - use custom secondary color
+            tabJogos.setBackgroundColor(android.graphics.Color.parseColor("#34343A"));
+            tabJogos.setTextColor(android.graphics.Color.parseColor("#CCCCCC"));
+        }
+    }
+    
     private void loadContent() {
-        gamesContainer.removeAllViews();
-        
+        Log.d(TAG, "loadContent: showingGames=" + showingGames);
         if (showingGames) {
             loadGames();
         } else {
@@ -321,146 +174,332 @@ public class GamesFragment extends Fragment {
     private void loadGames() {
         Log.d(TAG, "Loading games...");
         
-        // Add detailed debug information
         boolean isConfigured = RPCS3Helper.isRPCS3Configured(getContext());
         Uri folderUri = RPCS3Helper.getRPCS3FolderUri(getContext());
         
         Log.d(TAG, "RPCS3 configured: " + isConfigured);
         Log.d(TAG, "RPCS3 folder URI: " + (folderUri != null ? folderUri.toString() : "null"));
         
+        // Test the games folder directly
+        DocumentFile gamesFolder = RPCS3Helper.getGamesFolder(getContext());
+        Log.d(TAG, "Games folder via RPCS3Helper: " + (gamesFolder != null ? "found" : "not found"));
+        
         if (!isConfigured) {
-            Log.w(TAG, "RPCS3 folder not configured");
-            showConfigurationMessage();
+            showEmptyState("Pasta RPCS3 não configurada", "Configure a pasta do RPCS3 nas configurações");
             return;
         }
         
-        Log.d(TAG, "Starting LoadGamesTask with URI: " + folderUri.toString());
         new LoadGamesTask().execute(folderUri);
     }
     
-    private void showConfigurationMessage() {
-        Log.d(TAG, "Showing configuration message");
-        
-        // Material You empty state container
-        LinearLayout emptyContainer = new LinearLayout(getContext());
-        emptyContainer.setOrientation(LinearLayout.VERTICAL);
-        emptyContainer.setPadding(32, 80, 32, 32);
-        LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        emptyContainer.setLayoutParams(containerParams);
-        
-        // Empty state icon
-        TextView emptyIcon = new TextView(getContext());
-        emptyIcon.setText("📁");
-        emptyIcon.setTextSize(48);
-        emptyIcon.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        emptyIcon.setPadding(0, 0, 0, 24);
-        emptyContainer.addView(emptyIcon);
-        
-        // Empty state title
-        TextView titleText = new TextView(getContext());
-        titleText.setText("Pasta RPCS3 não configurada");
-        titleText.setTextColor(Color.parseColor("#E6E0E9")); // Material You on-surface
-        titleText.setTextSize(20);
-        titleText.setTypeface(titleText.getTypeface(), android.graphics.Typeface.BOLD);
-        titleText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        titleText.setPadding(0, 0, 0, 16);
-        emptyContainer.addView(titleText);
-        
-        // Empty state description
-        TextView descText = new TextView(getContext());
-        descText.setText("Vá em Settings para selecionar a pasta do RPCS3 e começar a usar o aplicativo.");
-        descText.setTextColor(Color.parseColor("#938F96")); // Material You on-surface-variant
-        descText.setTextSize(14);
-        descText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        descText.setPadding(0, 0, 0, 16);
-        emptyContainer.addView(descText);
-        
-        // Debug badge
-        TextView debugBadge = new TextView(getContext());
-        debugBadge.setText("🔧 Sistema de detecção real ativo");
-        debugBadge.setTextColor(Color.parseColor("#6750A4")); // Material You primary
-        debugBadge.setBackgroundColor(Color.parseColor("#1E1B24")); // Material You surface container
-        debugBadge.setTextSize(12);
-        debugBadge.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        debugBadge.setPadding(16, 8, 16, 8);
-        LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        badgeParams.gravity = android.view.Gravity.CENTER_HORIZONTAL;
-        debugBadge.setLayoutParams(badgeParams);
-        emptyContainer.addView(debugBadge);
-        
-        gamesContainer.addView(emptyContainer);
-    }
-    
     private void loadPPUs() {
-        // Carregar PPUs instalados do SharedPreferences
-        SharedPreferences prefs = getContext().getSharedPreferences("InstalledMods", getContext().MODE_PRIVATE);
-        boolean hasInstalledPPUs = prefs.getAll().size() > 0;
-        
-        if (hasInstalledPPUs) {
-            // TODO: Mostrar PPUs instalados
-            TextView ppuText = new TextView(getContext());
-            ppuText.setText("PPUs Instalados:\n\n(Lista será carregada dos mods salvos)");
-            ppuText.setTextColor(Color.WHITE);
-            ppuText.setTextSize(16);
-            ppuText.setPadding(16, 32, 16, 16);
-            gamesContainer.addView(ppuText);
-        } else {
-            TextView emptyText = new TextView(getContext());
-            emptyText.setText("Nenhum PPU instalado.\n\nUse o botão + para instalar PPUs.");
-            emptyText.setTextColor(Color.parseColor("#888888"));
-            emptyText.setTextSize(16);
-            emptyText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            emptyText.setPadding(16, 64, 16, 16);
-            gamesContainer.addView(emptyText);
-        }
+        // Show empty state for PPUs for now
+        showEmptyState("Nenhum PPU instalado", "Use o botão + para instalar PPUs");
     }
     
-
+    private void showLoading() {
+        Log.d(TAG, "showLoading: Setting loading state");
+        gamesRecycler.setVisibility(View.GONE);
+        emptyContainer.setVisibility(View.GONE);
+        loadingContainer.setVisibility(View.VISIBLE);
+        
+        loadingText.setText(showingGames ? "Carregando jogos..." : "Carregando PPUs...");
+        Log.d(TAG, "showLoading: Loading state set");
+    }
     
-    private void setupBackupReceiver() {
-        // Only setup if context is available and receiver is not already registered
-        if (getContext() == null || backupReceiver != null) {
+    private void showEmptyState(String title, String message) {
+        Log.d(TAG, "showEmptyState: " + title + " - " + message);
+        loadingContainer.setVisibility(View.GONE);
+        gamesRecycler.setVisibility(View.GONE);
+        emptyContainer.setVisibility(View.VISIBLE);
+        
+        emptyTitle.setText(title);
+        emptyMessage.setText(message);
+    }
+    
+    private void showContent() {
+        Log.d(TAG, "showContent: Making RecyclerView visible");
+        loadingContainer.setVisibility(View.GONE);
+        emptyContainer.setVisibility(View.GONE);
+        gamesRecycler.setVisibility(View.VISIBLE);
+        Log.d(TAG, "showContent: RecyclerView visibility set to VISIBLE");
+    }
+    
+    private void filterGames(String query) {
+        if (!showingGames || gameList.isEmpty()) {
             return;
         }
         
-        backupReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (BackupService.ACTION_UPDATE_PROGRESS.equals(intent.getAction())) {
-                    int progress = intent.getIntExtra(BackupService.EXTRA_PROGRESS, 0);
-                    // TODO: Update progress if needed
-                } else if (BackupService.ACTION_BACKUP_COMPLETE.equals(intent.getAction())) {
-                    boolean success = intent.getBooleanExtra(BackupService.EXTRA_SUCCESS, false);
-                    if (success && getContext() != null) {
-                        Toast.makeText(getContext(), "Backup concluído!", Toast.LENGTH_SHORT).show();
-                    } else if (getContext() != null) {
-                        Toast.makeText(getContext(), "Erro ao criar backup.", Toast.LENGTH_LONG).show();
-                    }
+        filteredGameList.clear();
+        
+        if (query.isEmpty()) {
+            filteredGameList.addAll(gameList);
+        } else {
+            String lowerQuery = query.toLowerCase();
+            for (GameItem game : gameList) {
+                if (game.title.toLowerCase().contains(lowerQuery) || 
+                    game.id.toLowerCase().contains(lowerQuery)) {
+                    filteredGameList.add(game);
                 }
             }
-        };
+        }
+        
+        adapter.updateList(filteredGameList);
+        
+        if (filteredGameList.isEmpty() && !query.isEmpty()) {
+            showEmptyState("Nenhum resultado encontrado", "Busca por: \"" + query + "\"");
+        } else if (filteredGameList.isEmpty()) {
+            showEmptyState("Nenhum jogo encontrado", "Verifique se os jogos estão na pasta do RPCS3");
+        } else {
+            showContent();
+        }
+    }
+    
+    private void onGameBackup(GameItem game) {
+        Log.d(TAG, "Backup requested for game: " + game.title);
+        
+        // Check if backup folder is configured
+        SharedPreferences prefs = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String backupFolderUri = prefs.getString("backup_folder_uri", null);
+        
+        if (backupFolderUri == null) {
+            // No backup folder configured, request user to select one
+            Log.d(TAG, "No backup folder configured, requesting user selection");
+            
+            if (getActivity() instanceof MainActivity) {
+                MainActivity mainActivity = (MainActivity) getActivity();
+                mainActivity.requestBackupFolderSelection();
+                
+                Toast.makeText(getContext(), 
+                    "Por favor, selecione uma pasta para salvar o backup de " + game.title, 
+                    Toast.LENGTH_LONG).show();
+                
+                // Store the pending backup game to retry after folder selection
+                prefs.edit().putString("pending_backup_game_id", game.id)
+                     .putString("pending_backup_game_title", game.title)
+                     .putString("pending_backup_game_appver", game.appVer)
+                     .putString("pending_backup_game_version", game.version)
+                     .apply();
+            }
+            return;
+        }
+        
+        // Check if game has PPUs before starting backup
+        if (!RPCS3Helper.hasGamePPUs(getContext(), game.id)) {
+            Toast.makeText(getContext(), 
+                "Nenhum PPU encontrado para " + game.title, 
+                Toast.LENGTH_LONG).show();
+            Log.w(TAG, "No PPUs found for game: " + game.id);
+            return;
+        }
+        
+        // Start backup service with all required data
+        Intent backupIntent = new Intent(getContext(), BackupService.class);
+        backupIntent.putExtra("gameId", game.id);
+        backupIntent.putExtra("gameTitle", game.title);
+        backupIntent.putExtra("appVer", game.appVer != null ? game.appVer : "01.00");
+        backupIntent.putExtra("version", game.version != null ? game.version : "01.00");
+        backupIntent.putExtra("backupFolderUri", backupFolderUri);
+        
+        getContext().startService(backupIntent);
+        
+        Toast.makeText(getContext(), "Backup iniciado para " + game.title, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Backup service started for: " + game.title + " (" + game.id + ")");
+    }
+    
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerBackupReceiver();
+    }
+    
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (backupReceiver != null) {
+            try {
+                getContext().unregisterReceiver(backupReceiver);
+            } catch (Exception e) {
+                Log.e(TAG, "Error unregistering backup receiver: " + e.getMessage());
+            }
+        }
+    }
+    
+    private void registerBackupReceiver() {
+        if (backupReceiver == null) {
+            backupReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    String action = intent.getAction();
+                    if ("BACKUP_PROGRESS".equals(action) || "BACKUP_COMPLETE".equals(action)) {
+                        // Handle backup updates
+                        Log.d(TAG, "Backup update received: " + action);
+                    }
+                }
+            };
+        }
         
         IntentFilter filter = new IntentFilter();
-        filter.addAction(BackupService.ACTION_UPDATE_PROGRESS);
-        filter.addAction(BackupService.ACTION_BACKUP_COMPLETE);
+        filter.addAction("BACKUP_PROGRESS");
+        filter.addAction("BACKUP_COMPLETE");
         
         try {
             getContext().registerReceiver(backupReceiver, filter);
         } catch (Exception e) {
-            android.util.Log.e(TAG, "Error registering backup receiver: " + e.getMessage());
+            Log.e(TAG, "Error registering backup receiver: " + e.getMessage());
         }
     }
     
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        // Receiver is unregistered in onPause()
-        backupReceiver = null;
-    }
-    
-    private ParamSfoData extractParamSfoData(DocumentFile paramFile) {
+    // Game loading task
+    private class LoadGamesTask extends AsyncTask<Uri, Void, List<GameItem>> {
+        
+        @Override
+        protected void onPreExecute() {
+            showLoading();
+        }
+        
+        @Override
+        protected List<GameItem> doInBackground(Uri... uris) {
+            List<GameItem> games = new ArrayList<>();
+            Log.d(TAG, "doInBackground: Starting to load games");
+            
+            if (uris.length == 0) {
+                Log.e(TAG, "No URIs provided to LoadGamesTask");
+                return games;
+            }
+            
+            Uri selectedFolderUri = uris[0];
+            if (selectedFolderUri == null) {
+                Log.e(TAG, "Selected folder URI is null");
+                return games;
+            }
+            
+            Log.d(TAG, "Processing folder: " + selectedFolderUri.toString());
+            DocumentFile rootFolder = DocumentFile.fromTreeUri(getContext(), selectedFolderUri);
+            if (rootFolder == null || !rootFolder.exists()) {
+                Log.e(TAG, "Root folder invalid or doesn't exist: " + selectedFolderUri.toString());
+                return games;
+            }
+            
+            Log.d(TAG, "Root folder found: " + rootFolder.getName());
+            DocumentFile configFolder = findSubFolder(rootFolder, "config");
+            if (configFolder == null) {
+                Log.e(TAG, "Config folder not found in " + rootFolder.getUri());
+                return games;
+            }
+            
+            Log.d(TAG, "Config folder found, processing games");
+            
+            // Process dev_hdd0/game folder
+            DocumentFile devHdd0Folder = findSubFolder(configFolder, "dev_hdd0");
+            if (devHdd0Folder != null) {
+                Log.d(TAG, "dev_hdd0 folder found");
+                DocumentFile gameFolder = findSubFolder(devHdd0Folder, "game");
+                if (gameFolder != null) {
+                    Log.d(TAG, "game folder found, processing games");
+                    processGameFolder(gameFolder, games, "");
+                } else {
+                    Log.w(TAG, "game folder not found in dev_hdd0");
+                }
+            } else {
+                Log.w(TAG, "dev_hdd0 folder not found");
+            }
+            
+            // Also check for games folder (some RPCS3 setups)
+            DocumentFile gamesFolder = findSubFolder(configFolder, "games");
+            if (gamesFolder != null) {
+                Log.d(TAG, "games folder found, processing games");
+                processGameFolder(gamesFolder, games, "PS3_GAME");
+            } else {
+                Log.d(TAG, "games folder not found (this is normal for most setups)");
+            }
+            
+            Log.d(TAG, "Game loading completed. Total games found: " + games.size());
+            return games;
+        }
+        
+        @Override
+        protected void onPostExecute(List<GameItem> games) {
+            if (getContext() == null) return;
+            
+            Log.d(TAG, "onPostExecute: Found " + games.size() + " games");
+            
+            gameList.clear();
+            gameList.addAll(games);
+            filteredGameList.clear();
+            filteredGameList.addAll(games);
+            
+            if (games.isEmpty()) {
+                Log.d(TAG, "No games found, showing empty state");
+                showEmptyState("Nenhum jogo encontrado", "Verifique se os jogos estão instalados na pasta do RPCS3");
+            } else {
+                Log.d(TAG, "Games found, updating adapter and showing content");
+                adapter.updateList(filteredGameList);
+                showContent();
+            }
+        }
+        
+        private void processGameFolder(DocumentFile parentFolder, List<GameItem> games, String subFolder) {
+            DocumentFile[] files = parentFolder.listFiles();
+            if (files == null) {
+                Log.w(TAG, "No files found in parent folder: " + parentFolder.getUri());
+                return;
+            }
+            
+            Log.d(TAG, "Processing " + files.length + " items in " + parentFolder.getName());
+            
+            for (DocumentFile folder : files) {
+                if (folder.isDirectory() && folder.getName() != null) {
+                    Log.d(TAG, "Processing folder: " + folder.getName());
+                    DocumentFile targetFolder = subFolder.isEmpty() ? folder : findSubFolder(folder, subFolder);
+                    if (targetFolder != null) {
+                        DocumentFile paramFile = targetFolder.findFile("PARAM.SFO");
+                        DocumentFile iconFile = targetFolder.findFile("ICON0.PNG");
+                        
+                        Log.d(TAG, "Checking PARAM.SFO in " + folder.getName() + ": " + (paramFile != null && paramFile.exists()));
+                        
+                        if (paramFile != null && paramFile.exists()) {
+                            Log.d(TAG, "Extracting PARAM.SFO data for " + folder.getName());
+                            ParamSfoData data = extractParamSfoData(paramFile);
+                            if (data != null && data.title != null) {
+                                String gameId = folder.getName();
+                                Uri iconUri = (iconFile != null && iconFile.exists()) ? iconFile.getUri() : null;
+                                
+                                GameItem gameItem = new GameItem(gameId, data.title, data.appVer, data.version, iconUri);
+                                games.add(gameItem);
+                                
+                                Log.d(TAG, "Added game: " + data.title + " (" + gameId + ")");
+                            } else {
+                                Log.w(TAG, "Failed to extract PARAM.SFO data for " + folder.getName());
+                            }
+                        } else {
+                            Log.d(TAG, "No PARAM.SFO found in " + folder.getName());
+                        }
+                    } else {
+                        Log.d(TAG, "Target folder not found for " + folder.getName() + " (subFolder: " + subFolder + ")");
+                    }
+                }
+            }
+        }
+        
+        private DocumentFile findSubFolder(DocumentFile parent, String folderName) {
+            if (parent == null) return null;
+            DocumentFile[] files = parent.listFiles();
+            if (files == null) {
+                Log.w(TAG, "listFiles returned null for " + parent.getUri());
+                return null;
+            }
+            for (DocumentFile file : files) {
+                if (file.isDirectory() && file.getName() != null && file.getName().equalsIgnoreCase(folderName)) {
+                    Log.d(TAG, "Folder found: " + folderName + " at " + file.getUri());
+                    return file;
+                }
+            }
+            Log.d(TAG, "Folder not found: " + folderName + " in " + parent.getUri());
+            return null;
+        }
+        
+        private ParamSfoData extractParamSfoData(DocumentFile paramFile) {
         try {
             InputStream inputStream = getContext().getContentResolver().openInputStream(paramFile.getUri());
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -519,576 +558,98 @@ public class GamesFragment extends Fragment {
                     version != null ? version : "01.00"
             );
         } catch (Exception e) {
-            Log.e(TAG, "Erro ao extrair dados do PARAM.SFO: " + e.getMessage());
-            e.printStackTrace();
+            Log.e(TAG, "Error extracting PARAM.SFO data: " + e.getMessage());
             return null;
         }
     }
-    
-    private DocumentFile findSubFolder(DocumentFile parent, String folderName) {
-        if (parent == null) return null;
-        DocumentFile[] files = parent.listFiles();
-        if (files == null) {
-            Log.w(TAG, "listFiles retornou null para " + parent.getUri());
-            return null;
-        }
-        for (DocumentFile file : files) {
-            if (file.isDirectory() && file.getName() != null && file.getName().equalsIgnoreCase(folderName)) {
-                Log.d(TAG, "Pasta encontrada: " + folderName + " em " + file.getUri());
-                return file;
-            }
-        }
-        Log.w(TAG, "Pasta " + folderName + " não encontrada em " + parent.getUri());
-        return null;
     }
     
-    private class LoadGamesTask extends AsyncTask<Uri, Void, Void> {
-        
-        @Override
-        protected void onPreExecute() {
-            // Show loading message with debug info
-            gamesContainer.removeAllViews();
-            TextView loadingText = new TextView(getContext());
-            loadingText.setText("Carregando jogos...\n\n🔍 Detectando jogos reais do RPCS3\n📁 Analisando PARAM.SFO");
-            loadingText.setTextColor(Color.WHITE);
-            loadingText.setTextSize(16);
-            loadingText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            loadingText.setPadding(16, 64, 16, 16);
-            gamesContainer.addView(loadingText);
-        }
-
-        @Override
-        protected Void doInBackground(Uri... uris) {
-            if (uris.length == 0) {
-                Log.e(TAG, "No URIs provided to LoadGamesTask");
-                return null;
-            }
-            Uri selectedFolderUri = uris[0];
-            
-            if (selectedFolderUri == null) {
-                Log.e(TAG, "Selected folder URI is null");
-                return null;
-            }
-
-            Log.d(TAG, "Processing folder: " + selectedFolderUri.toString());
-            DocumentFile rootFolder = DocumentFile.fromTreeUri(getContext(), selectedFolderUri);
-            if (rootFolder == null || !rootFolder.exists()) {
-                Log.e(TAG, "Root folder inválido ou não existe: " + selectedFolderUri.toString());
-                return null;
-            }
-
-            Log.d(TAG, "Root folder found: " + rootFolder.getName());
-            DocumentFile configFolder = findSubFolder(rootFolder, "config");
-            if (configFolder == null) {
-                Log.e(TAG, "Pasta config não encontrada em " + rootFolder.getUri());
-                return null;
-            }
-
-            Log.d(TAG, "Config folder found, clearing game list");
-            gameList.clear();
-
-            DocumentFile devHdd0Folder = findSubFolder(configFolder, "dev_hdd0");
-            if (devHdd0Folder != null) {
-                Log.d(TAG, "dev_hdd0 folder found");
-                DocumentFile gameFolder = findSubFolder(devHdd0Folder, "game");
-                if (gameFolder != null) {
-                    Log.d(TAG, "game folder found, processing games");
-                    processGameFolder(gameFolder, "");
-                } else {
-                    Log.w(TAG, "game folder not found in dev_hdd0");
-                }
-            } else {
-                Log.w(TAG, "dev_hdd0 folder not found");
-            }
-
-            DocumentFile gamesFolder = findSubFolder(configFolder, "games");
-            if (gamesFolder != null) {
-                Log.d(TAG, "games folder found, processing games");
-                processGameFolder(gamesFolder, "PS3_GAME");
-            } else {
-                Log.d(TAG, "games folder not found (this is normal for most setups)");
-            }
-
-            Log.d(TAG, "Game loading completed. Total games found: " + gameList.size());
-            return null;
-        }
-        
-        private void processGameFolder(DocumentFile parentFolder, String subFolder) {
-            DocumentFile[] files = parentFolder.listFiles();
-            if (files == null) {
-                Log.w(TAG, "No files found in parent folder: " + parentFolder.getUri());
-                return;
-            }
-            
-            Log.d(TAG, "Processing " + files.length + " items in " + parentFolder.getName());
-            
-            for (DocumentFile folder : files) {
-                if (folder.isDirectory() && folder.getName() != null) {
-                    Log.d(TAG, "Processing folder: " + folder.getName());
-                    DocumentFile targetFolder = subFolder.isEmpty() ? folder : findSubFolder(folder, subFolder);
-                    if (targetFolder != null) {
-                        DocumentFile paramFile = targetFolder.findFile("PARAM.SFO");
-                        DocumentFile iconFile = targetFolder.findFile("ICON0.PNG");
-                        
-                        Log.d(TAG, "Checking PARAM.SFO in " + folder.getName() + ": " + (paramFile != null && paramFile.exists()));
-                        
-                        if (paramFile != null && paramFile.exists()) {
-                            Log.d(TAG, "Extracting PARAM.SFO data for " + folder.getName());
-                            ParamSfoData data = extractParamSfoData(paramFile);
-                            if (data != null && data.title != null) {
-                                String gameId = folder.getName();
-                                Uri iconUri = (iconFile != null && iconFile.exists()) ? iconFile.getUri() : null;
-                                Log.d(TAG, "Game found: " + data.title + " (" + gameId + ")");
-                                gameList.add(new GameItem(data.title, gameId, data.appVer, data.version, iconUri));
-                            } else {
-                                Log.w(TAG, "Failed to extract PARAM.SFO data for " + folder.getName());
-                            }
-                        }
-                    } else {
-                        Log.w(TAG, "Target folder not found for " + folder.getName());
-                    }
-                }
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            if (getContext() == null) {
-                Log.w(TAG, "Context is null in onPostExecute");
-                return;
-            }
-            
-            Log.d(TAG, "LoadGamesTask completed. Games found: " + gameList.size());
-            
-            gamesContainer.removeAllViews();
-            filteredGameList.clear();
-            filteredGameList.addAll(gameList);
-            
-            if (filteredGameList.isEmpty()) {
-                Log.w(TAG, "No games found, showing empty message");
-                
-                // Material You empty state for no games
-                LinearLayout emptyContainer = new LinearLayout(getContext());
-                emptyContainer.setOrientation(LinearLayout.VERTICAL);
-                emptyContainer.setPadding(32, 60, 32, 32);
-                
-                // Empty state icon
-                TextView emptyIcon = new TextView(getContext());
-                emptyIcon.setText("🎮");
-                emptyIcon.setTextSize(56);
-                emptyIcon.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                emptyIcon.setPadding(0, 0, 0, 24);
-                emptyContainer.addView(emptyIcon);
-                
-                // Empty state title
-                TextView titleText = new TextView(getContext());
-                titleText.setText("Nenhum jogo encontrado");
-                titleText.setTextColor(Color.parseColor("#E6E0E9")); // Material You on-surface
-                titleText.setTextSize(22);
-                titleText.setTypeface(titleText.getTypeface(), android.graphics.Typeface.BOLD);
-                titleText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                titleText.setPadding(0, 0, 0, 16);
-                emptyContainer.addView(titleText);
-                
-                // Checklist container
-                LinearLayout checklistContainer = new LinearLayout(getContext());
-                checklistContainer.setOrientation(LinearLayout.VERTICAL);
-                checklistContainer.setBackgroundColor(Color.parseColor("#1E1B24")); // Material You surface container
-                checklistContainer.setPadding(20, 16, 20, 16);
-                LinearLayout.LayoutParams checklistParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                checklistParams.setMargins(0, 0, 0, 16);
-                checklistContainer.setLayoutParams(checklistParams);
-                
-                TextView checklistTitle = new TextView(getContext());
-                checklistTitle.setText("🔍 Verificações:");
-                checklistTitle.setTextColor(Color.parseColor("#6750A4")); // Material You primary
-                checklistTitle.setTextSize(14);
-                checklistTitle.setTypeface(checklistTitle.getTypeface(), android.graphics.Typeface.BOLD);
-                checklistTitle.setPadding(0, 0, 0, 12);
-                checklistContainer.addView(checklistTitle);
-                
-                String[] checks = {
-                    "✓ Pasta RPCS3 configurada corretamente",
-                    "✓ Jogos instalados em /config/dev_hdd0/game/",
-                    "✓ Arquivos PARAM.SFO válidos nos jogos"
-                };
-                
-                for (String check : checks) {
-                    TextView checkItem = new TextView(getContext());
-                    checkItem.setText(check);
-                    checkItem.setTextColor(Color.parseColor("#CAC4D0")); // Material You on-surface-variant
-                    checkItem.setTextSize(12);
-                    checkItem.setPadding(0, 4, 0, 4);
-                    checklistContainer.addView(checkItem);
-                }
-                
-                emptyContainer.addView(checklistContainer);
-                
-                // Status badge
-                TextView statusBadge = new TextView(getContext());
-                statusBadge.setText("🛠️ Sistema de detecção real ativo");
-                statusBadge.setTextColor(Color.parseColor("#5DD87C")); // Material You success
-                statusBadge.setBackgroundColor(Color.parseColor("#0F5132")); // Material You success container
-                statusBadge.setTextSize(12);
-                statusBadge.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                statusBadge.setPadding(16, 8, 16, 8);
-                LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                badgeParams.gravity = android.view.Gravity.CENTER_HORIZONTAL;
-                statusBadge.setLayoutParams(badgeParams);
-                emptyContainer.addView(statusBadge);
-                
-                gamesContainer.addView(emptyContainer);
-            } else {
-                Log.d(TAG, "Displaying " + filteredGameList.size() + " games");
-                
-                // Material You stats container
-                LinearLayout statsContainer = new LinearLayout(getContext());
-                statsContainer.setOrientation(LinearLayout.HORIZONTAL);
-                statsContainer.setBackgroundColor(Color.parseColor("#1E1B24")); // Material You surface container
-                statsContainer.setPadding(20, 16, 20, 16);
-                LinearLayout.LayoutParams statsParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                statsParams.setMargins(16, 8, 16, 20);
-                statsContainer.setLayoutParams(statsParams);
-                
-                // Add subtle elevation
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                    statsContainer.setElevation(1f);
-                }
-                
-                // Total games stat
-                LinearLayout totalGamesBox = new LinearLayout(getContext());
-                totalGamesBox.setOrientation(LinearLayout.VERTICAL);
-                LinearLayout.LayoutParams totalParams = new LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-                totalGamesBox.setLayoutParams(totalParams);
-                
-                TextView totalNumber = new TextView(getContext());
-                totalNumber.setText(String.valueOf(filteredGameList.size()));
-                totalNumber.setTextColor(Color.parseColor("#6750A4")); // Material You primary
-                totalNumber.setTextSize(24);
-                totalNumber.setTypeface(totalNumber.getTypeface(), android.graphics.Typeface.BOLD);
-                totalNumber.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                
-                TextView totalLabel = new TextView(getContext());
-                totalLabel.setText("🎮 Jogos");
-                totalLabel.setTextColor(Color.parseColor("#CAC4D0")); // Material You on-surface-variant
-                totalLabel.setTextSize(12);
-                totalLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                
-                totalGamesBox.addView(totalNumber);
-                totalGamesBox.addView(totalLabel);
-                
-                // Divider
-                TextView divider = new TextView(getContext());
-                divider.setText("|");
-                divider.setTextColor(Color.parseColor("#48454E")); // Material You outline-variant
-                divider.setTextSize(18);
-                divider.setPadding(16, 0, 16, 0);
-                LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                dividerParams.gravity = android.view.Gravity.CENTER_VERTICAL;
-                divider.setLayoutParams(dividerParams);
-                
-                // PPU games stat
-                LinearLayout ppuGamesBox = new LinearLayout(getContext());
-                ppuGamesBox.setOrientation(LinearLayout.VERTICAL);
-                LinearLayout.LayoutParams ppuParams = new LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-                ppuGamesBox.setLayoutParams(ppuParams);
-                
-                int gamesWithPPUs = 0;
-                for (GameItem game : filteredGameList) {
-                    if (RPCS3Helper.hasGamePPUs(getContext(), game.id)) {
-                        gamesWithPPUs++;
-                    }
-                }
-                
-                TextView ppuNumber = new TextView(getContext());
-                ppuNumber.setText(String.valueOf(gamesWithPPUs));
-                ppuNumber.setTextColor(Color.parseColor("#5DD87C")); // Material You success
-                ppuNumber.setTextSize(24);
-                ppuNumber.setTypeface(ppuNumber.getTypeface(), android.graphics.Typeface.BOLD);
-                ppuNumber.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                
-                TextView ppuLabel = new TextView(getContext());
-                ppuLabel.setText("💾 Com PPUs");
-                ppuLabel.setTextColor(Color.parseColor("#CAC4D0")); // Material You on-surface-variant
-                ppuLabel.setTextSize(12);
-                ppuLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                
-                ppuGamesBox.addView(ppuNumber);
-                ppuGamesBox.addView(ppuLabel);
-                
-                statsContainer.addView(totalGamesBox);
-                statsContainer.addView(divider);
-                statsContainer.addView(ppuGamesBox);
-                gamesContainer.addView(statsContainer);
-                
-                // Show games using real data
-                for (GameItem game : filteredGameList) {
-                    createRealGameCard(game);
-                }
-            }
-        }
-    }
-    
-    private void filterGames(String query) {
-        if (!showingGames || gameList.isEmpty()) {
-            return;
-        }
-        
-        gamesContainer.removeAllViews();
-        filteredGameList.clear();
-        
-        if (query.isEmpty()) {
-            filteredGameList.addAll(gameList);
-        } else {
-            String lowerQuery = query.toLowerCase();
-            for (GameItem game : gameList) {
-                if (game.title.toLowerCase().contains(lowerQuery) || 
-                    game.id.toLowerCase().contains(lowerQuery)) {
-                    filteredGameList.add(game);
-                }
-            }
-        }
-        
-        Log.d(TAG, "Filtered games: " + filteredGameList.size() + " from " + gameList.size());
-        
-        if (filteredGameList.isEmpty()) {
-            // Material You empty search state
-            LinearLayout emptyContainer = new LinearLayout(getContext());
-            emptyContainer.setOrientation(LinearLayout.VERTICAL);
-            emptyContainer.setPadding(32, 80, 32, 32);
-            
-            // Search empty icon
-            TextView emptyIcon = new TextView(getContext());
-            emptyIcon.setText("🔍");
-            emptyIcon.setTextSize(48);
-            emptyIcon.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            emptyIcon.setPadding(0, 0, 0, 20);
-            emptyContainer.addView(emptyIcon);
-            
-            // Empty search title
-            TextView titleText = new TextView(getContext());
-            titleText.setText("Nenhum resultado encontrado");
-            titleText.setTextColor(Color.parseColor("#E6E0E9")); // Material You on-surface
-            titleText.setTextSize(18);
-            titleText.setTypeface(titleText.getTypeface(), android.graphics.Typeface.BOLD);
-            titleText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            titleText.setPadding(0, 0, 0, 12);
-            emptyContainer.addView(titleText);
-            
-            // Search query
-            TextView queryText = new TextView(getContext());
-            queryText.setText("Busca por: \"" + query + "\"");
-            queryText.setTextColor(Color.parseColor("#938F96")); // Material You on-surface-variant
-            queryText.setTextSize(14);
-            queryText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            queryText.setPadding(0, 0, 0, 16);
-            emptyContainer.addView(queryText);
-            
-            // Suggestion text
-            TextView suggestionText = new TextView(getContext());
-            suggestionText.setText("Tente buscar por outro termo ou verifique se os jogos estão instalados.");
-            suggestionText.setTextColor(Color.parseColor("#CAC4D0")); // Material You on-surface-variant
-            suggestionText.setTextSize(12);
-            suggestionText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            emptyContainer.addView(suggestionText);
-            
-            gamesContainer.addView(emptyContainer);
-        } else {
-            for (GameItem game : filteredGameList) {
-                createRealGameCard(game);
-            }
-        }
-    }
-    
-    private void createRealGameCard(GameItem game) {
-        // Material You 3.0 Card Container
-        LinearLayout card = new LinearLayout(getContext());
-        card.setOrientation(LinearLayout.VERTICAL);
-        card.setBackgroundColor(Color.parseColor("#1E1B24")); // Material You surface container high
-        card.setPadding(0, 0, 0, 0);
-        // Add subtle rounded corners effect with elevation
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            card.setElevation(6f);
-        }
-        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        cardParams.setMargins(8, 8, 8, 16);
-        card.setLayoutParams(cardParams);
-        
-        // Game image/icon with Material You styling
-        ImageView imageView = new ImageView(getContext());
-        LinearLayout.LayoutParams imageParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        imageView.setAdjustViewBounds(true);
-        imageView.setLayoutParams(imageParams);
-        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        
-        // Load game icon if available
-        if (game.iconUri != null) {
-            try {
-                InputStream inputStream = getContext().getContentResolver().openInputStream(game.iconUri);
-                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                imageView.setImageBitmap(bitmap);
-                inputStream.close();
-            } catch (IOException e) {
-                // Material You gradient colors for game placeholders
-                int colorIndex = game.id.hashCode() % 8;
-                String[] gradientColors = {"#6750A4", "#7C4DFF", "#00BCD4", "#4CAF50", "#FF9800", "#E91E63", "#9C27B0", "#3F51B5"};
-                imageView.setBackgroundColor(Color.parseColor(gradientColors[colorIndex]));
-            }
-        } else {
-            // Material You gradient colors for game placeholders
-            int colorIndex = game.id.hashCode() % 8;
-            String[] gradientColors = {"#6750A4", "#7C4DFF", "#00BCD4", "#4CAF50", "#FF9800", "#E91E63", "#9C27B0", "#3F51B5"};
-            imageView.setBackgroundColor(Color.parseColor(gradientColors[colorIndex]));
-        }
-        card.addView(imageView);
-        
-        // Game info container with Material You padding
-        LinearLayout infoContainer = new LinearLayout(getContext());
-        infoContainer.setOrientation(LinearLayout.VERTICAL);
-        infoContainer.setPadding(20, 20, 20, 20);
-        
-        // Game title - Material You typography
-        TextView titleText = new TextView(getContext());
-        titleText.setText(game.title);
-        titleText.setTextColor(Color.parseColor("#E6E0E9")); // Material You on-surface
-        titleText.setTextSize(18);
-        titleText.setTypeface(titleText.getTypeface(), android.graphics.Typeface.BOLD);
-        titleText.setPadding(0, 0, 0, 8);
-        infoContainer.addView(titleText);
-        
-        // Game ID and Region - Material You secondary text
-        TextView gameIdText = new TextView(getContext());
-        gameIdText.setText("ID: " + game.id + " • " + RPCS3Helper.getRegionFromGameId(game.id));
-        gameIdText.setTextColor(Color.parseColor("#938F96")); // Material You on-surface-variant
-        gameIdText.setTextSize(12);
-        gameIdText.setPadding(0, 4, 0, 8);
-        infoContainer.addView(gameIdText);
-        
-        // Version info container
-        LinearLayout versionContainer = new LinearLayout(getContext());
-        versionContainer.setOrientation(LinearLayout.HORIZONTAL);
-        versionContainer.setPadding(0, 0, 0, 12);
-        
-        TextView appVersionText = new TextView(getContext());
-        appVersionText.setText("App: " + game.appVer);
-        appVersionText.setTextColor(Color.parseColor("#CAC4D0")); // Material You on-surface-variant
-        appVersionText.setTextSize(13);
-        LinearLayout.LayoutParams appVersionParams = new LinearLayout.LayoutParams(
-            0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-        appVersionText.setLayoutParams(appVersionParams);
-        
-        TextView versionText = new TextView(getContext());
-        versionText.setText("Ver: " + game.version);
-        versionText.setTextColor(Color.parseColor("#CAC4D0")); // Material You on-surface-variant
-        versionText.setTextSize(13);
-        
-        versionContainer.addView(appVersionText);
-        versionContainer.addView(versionText);
-        infoContainer.addView(versionContainer);
-        
-        // PPU Status with Material You colors
-        boolean hasPPUs = RPCS3Helper.hasGamePPUs(getContext(), game.id);
-        LinearLayout statusContainer = new LinearLayout(getContext());
-        statusContainer.setOrientation(LinearLayout.HORIZONTAL);
-        statusContainer.setBackgroundColor(hasPPUs ? Color.parseColor("#0F5132") : Color.parseColor("#663C00")); // Material You success/warning container
-        statusContainer.setPadding(12, 8, 12, 8);
-        LinearLayout.LayoutParams statusParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        statusParams.setMargins(0, 0, 0, 16);
-        statusContainer.setLayoutParams(statusParams);
-        
-        TextView statusIcon = new TextView(getContext());
-        statusIcon.setText(hasPPUs ? "✓" : "⚠");
-        statusIcon.setTextColor(hasPPUs ? Color.parseColor("#5DD87C") : Color.parseColor("#FFCC02")); // Material You success/warning
-        statusIcon.setTextSize(14);
-        statusIcon.setTypeface(statusIcon.getTypeface(), android.graphics.Typeface.BOLD);
-        statusIcon.setPadding(0, 0, 8, 0);
-        
-        TextView statusText = new TextView(getContext());
-        statusText.setText(hasPPUs ? "PPUs compiladas" : "Sem PPUs");
-        statusText.setTextColor(hasPPUs ? Color.parseColor("#5DD87C") : Color.parseColor("#FFCC02")); // Material You success/warning
-        statusText.setTextSize(12);
-        
-        statusContainer.addView(statusIcon);
-        statusContainer.addView(statusText);
-        infoContainer.addView(statusContainer);
-        
-        // Material You 3.0 Backup button
-        Button backupButton = new Button(getContext());
-        backupButton.setTextSize(14);
-        backupButton.setTypeface(backupButton.getTypeface(), android.graphics.Typeface.BOLD);
-        backupButton.setPadding(24, 16, 24, 16);
-        
-        if (hasPPUs) {
-            backupButton.setText("FAZER BACKUP");
-            backupButton.setBackgroundColor(Color.parseColor("#6750A4")); // Material You primary
-            backupButton.setTextColor(Color.parseColor("#FFFFFF")); // Material You on-primary
-        } else {
-            backupButton.setText("BACKUP NÃO DISPONÍVEL");
-            backupButton.setBackgroundColor(Color.parseColor("#48454E")); // Material You surface-variant
-            backupButton.setTextColor(Color.parseColor("#938F96")); // Material You on-surface-variant
-        }
-        
-        backupButton.setEnabled(hasPPUs);
-        backupButton.setAlpha(hasPPUs ? 1.0f : 0.6f);
-        
-        LinearLayout.LayoutParams backupParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        backupParams.setMargins(0, 8, 0, 0);
-        backupButton.setLayoutParams(backupParams);
-        
-        backupButton.setOnClickListener(v -> {
-            if (!hasPPUs) {
-                Toast.makeText(getContext(), "⚠️ Este jogo não possui PPUs compiladas. Execute-o primeiro no RPCS3.", Toast.LENGTH_LONG).show();
-                return;
-            }
-            
-            // Request backup folder selection
-            requestBackupFolderSelection(game);
-        });
-        
-        infoContainer.addView(backupButton);
-        card.addView(infoContainer);
-        gamesContainer.addView(card);
-    }
-    
-    // Game being backed up
-    private GameItem pendingBackupGame = null;
-    
-    private void requestBackupFolderSelection(GameItem game) {
-        pendingBackupGame = game;
-        if (mainActivity != null) {
-            mainActivity.requestBackupFolderSelection();
-        } else {
-            Toast.makeText(getContext(), "Erro ao solicitar seleção de pasta", Toast.LENGTH_SHORT).show();
-        }
-    }
-    
+    // Method called by MainActivity when backup folder is selected
     public void handleBackupFolderSelected(Uri folderUri) {
-        if (pendingBackupGame == null) {
-            Toast.makeText(getContext(), "Erro: nenhum jogo pendente para backup", Toast.LENGTH_SHORT).show();
-            return;
+        Log.d(TAG, "Backup folder selected: " + folderUri.toString());
+        
+        // Save the backup folder URI in SharedPreferences
+        SharedPreferences prefs = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString("backup_folder_uri", folderUri.toString()).apply();
+        
+        // Show confirmation message
+        Toast.makeText(getContext(), "Pasta de backup configurada com sucesso", Toast.LENGTH_SHORT).show();
+        
+        // Check if there's a pending backup to process
+        String pendingGameId = prefs.getString("pending_backup_game_id", null);
+        if (pendingGameId != null) {
+            String pendingGameTitle = prefs.getString("pending_backup_game_title", null);
+            String pendingGameAppVer = prefs.getString("pending_backup_game_appver", "01.00");
+            String pendingGameVersion = prefs.getString("pending_backup_game_version", "01.00");
+            
+            if (pendingGameTitle != null) {
+                Log.d(TAG, "Processing pending backup for: " + pendingGameTitle);
+                
+                // Clear pending backup data
+                prefs.edit()
+                    .remove("pending_backup_game_id")
+                    .remove("pending_backup_game_title")
+                    .remove("pending_backup_game_appver")
+                    .remove("pending_backup_game_version")
+                    .apply();
+                
+                // Check if game has PPUs before starting backup
+                if (!RPCS3Helper.hasGamePPUs(getContext(), pendingGameId)) {
+                    Toast.makeText(getContext(), 
+                        "Nenhum PPU encontrado para " + pendingGameTitle, 
+                        Toast.LENGTH_LONG).show();
+                    Log.w(TAG, "No PPUs found for pending game: " + pendingGameId);
+                    return;
+                }
+                
+                // Start backup service for pending game
+                Intent backupIntent = new Intent(getContext(), BackupService.class);
+                backupIntent.putExtra("gameId", pendingGameId);
+                backupIntent.putExtra("gameTitle", pendingGameTitle);
+                backupIntent.putExtra("appVer", pendingGameAppVer);
+                backupIntent.putExtra("version", pendingGameVersion);
+                backupIntent.putExtra("backupFolderUri", folderUri.toString());
+                
+                getContext().startService(backupIntent);
+                
+                Toast.makeText(getContext(), "Backup iniciado para " + pendingGameTitle, Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Pending backup service started for: " + pendingGameTitle + " (" + pendingGameId + ")");
+            }
         }
         
-        // Start backup using BackupService with selected folder
-        Intent serviceIntent = new Intent(getContext(), BackupService.class);
-        serviceIntent.putExtra("gameId", pendingBackupGame.id);
-        serviceIntent.putExtra("gameTitle", pendingBackupGame.title);
-        serviceIntent.putExtra("appVer", pendingBackupGame.appVer);
-        serviceIntent.putExtra("version", pendingBackupGame.version);
-        serviceIntent.putExtra("backupFolderUri", folderUri.toString());
-        getContext().startForegroundService(serviceIntent);
+        // Optionally refresh the games list if needed
+        if (showingGames && !gameList.isEmpty()) {
+            // Refresh adapter to potentially show backup status
+            adapter.notifyDataSetChanged();
+        }
+    }
+    
+    // Data classes
+    public static class GameItem {
+        public final String id;
+        public final String title;
+        public final String appVer;
+        public final String version;
+        public final Uri iconUri;
         
-        Toast.makeText(getContext(), "📦 Backup de " + pendingBackupGame.title + " iniciado", Toast.LENGTH_SHORT).show();
+        public GameItem(String id, String title, String appVer, String version, Uri iconUri) {
+            this.id = id;
+            this.title = title;
+            this.appVer = appVer;
+            this.version = version;
+            this.iconUri = iconUri;
+        }
+    }
+    
+    public static class ParamSfoData {
+        public final String title;
+        public final String appVer;
+        public final String version;
         
-        pendingBackupGame = null; // Clear pending game
+        public ParamSfoData(String title, String appVer, String version) {
+            this.title = title;
+            this.appVer = appVer;
+            this.version = version;
+        }
     }
 }

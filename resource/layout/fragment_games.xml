@@ -1,192 +1,208 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#121318"
     tools:context=".ui.games.GamesFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:padding="16dp">
 
-        <!-- Search Bar -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/text_input_search"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        <!-- Tab Container -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_tabs"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:hint="@string/games_search_hint"
-            app:endIconDrawable="@drawable/ic_search"
-            app:endIconMode="custom"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#1A1B21"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:startIconDrawable="@drawable/ic_search">
+            app:layout_constraintTop_toTopOf="parent">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_text_search"
+            <LinearLayout
+                android:id="@+id/tab_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:imeOptions="actionSearch"
-                android:inputType="text"
-                android:maxLines="1" />
+                android:orientation="horizontal"
+                android:padding="8dp">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/tab_jogos"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:text="🎮 JOGOS"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#354479"
+                    android:textAllCaps="true" />
 
-        <!-- Filter Chips -->
-        <HorizontalScrollView
-            android:id="@+id/scroll_filters"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/tab_ppus"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:text="💾 PPUS"
+                    android:textColor="#CCCCCC"
+                    android:backgroundTint="#34343A"
+                    android:textAllCaps="true" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Search Container -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_search"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:scrollbars="none"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="1dp"
+            app:cardBackgroundColor="#1A1B21"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_input_search">
+            app:layout_constraintTop_toBottomOf="@+id/card_tabs">
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chip_group_filters"
-                android:layout_width="wrap_content"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/search_input_layout"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                app:chipSpacingHorizontal="8dp"
-                app:selectionRequired="true"
-                app:singleSelection="true">
+                android:hint="Pesquisar jogos..."
+                app:startIconDrawable="@drawable/ic_search">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_all_games"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/search_input"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/games_filter_all" />
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#CCCCCC"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:maxLines="1" />
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_with_mods"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/games_filter_with_mods" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_no_mods"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/games_filter_no_mods" />
+        </com.google.android.material.card.MaterialCardView>
 
-            </com.google.android.material.chip.ChipGroup>
-
-        </HorizontalScrollView>
-
-        <!-- Swipe Refresh Layout -->
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/swipe_refresh"
+        <!-- Games Content Container -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/games_content"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:minHeight="400dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/scroll_filters">
+            app:layout_constraintTop_toBottomOf="@+id/card_search">
+
+            <!-- Loading State -->
+            <LinearLayout
+                android:id="@+id/loading_container"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="32dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ProgressBar
+                    android:id="@+id/progress_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:indeterminate="true" />
+
+                <TextView
+                    android:id="@+id/loading_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Carregando jogos..."
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/loading_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Analisando pasta do RPCS3"
+                    android:textColor="#CCCCCC"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
 
             <!-- Games RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_games"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:id="@+id/games_recycler"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:clipToPadding="false"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
                 android:paddingBottom="16dp"
+                android:visibility="gone"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:itemCount="8"
-                tools:listitem="@layout/item_game" />
-
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-        <!-- Empty State -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/layout_empty_state"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/scroll_filters"
-            tools:visibility="visible">
-
-            <ImageView
-                android:id="@+id/image_empty_state"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:alpha="0.6"
-                android:src="@drawable/ic_games"
-                android:tint="?attr/colorOnSurfaceVariant"
-                app:layout_constraintBottom_toTopOf="@+id/text_empty_state"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed" />
+                tools:itemCount="3"
+                tools:listitem="@layout/item_game_card" />
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/text_empty_state"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/games_empty_state"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                android:textColor="?attr/colorOnSurfaceVariant"
+            <!-- Empty State -->
+            <LinearLayout
+                android:id="@+id/empty_container"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="32dp"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/image_empty_state" />
+                app:layout_constraintTop_toTopOf="parent">
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/empty_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎮"
+                    android:textSize="56sp" />
 
-        <!-- Loading State -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/layout_loading"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/scroll_filters">
+                <TextView
+                    android:id="@+id/empty_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Nenhum jogo encontrado"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
-            <com.google.android.material.progressindicator.CircularProgressIndicator
-                android:id="@+id/progress_loading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:indeterminate="true"
-                app:layout_constraintBottom_toTopOf="@+id/text_loading"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed" />
+                <TextView
+                    android:id="@+id/empty_message"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Configure a pasta do RPCS3 nas configurações"
+                    android:textColor="#CCCCCC"
+                    android:textSize="14sp"
+                    android:textAlignment="center" />
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/text_loading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/games_loading"
-                android:textAppearance="?attr/textAppearanceBodyLarge"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/progress_loading" />
+            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.core.widget.NestedScrollView>

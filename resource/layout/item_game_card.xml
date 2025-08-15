@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#1A1B21"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Game Cover Image -->
+        <ImageView
+            android:id="@+id/game_image"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:scaleType="centerCrop"
+            android:background="#354479"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Game Title -->
+        <TextView
+            android:id="@+id/game_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintEnd_toStartOf="@+id/backup_button"
+            app:layout_constraintStart_toEndOf="@+id/game_image"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="The Last of Us™" />
+
+        <!-- Game ID and Region -->
+        <TextView
+            android:id="@+id/game_id"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:textColor="#CCCCCC"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toStartOf="@+id/backup_button"
+            app:layout_constraintStart_toEndOf="@+id/game_image"
+            app:layout_constraintTop_toBottomOf="@+id/game_title"
+            tools:text="ID: BLUS30947 • US" />
+
+        <!-- Version Container -->
+        <LinearLayout
+            android:id="@+id/version_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toStartOf="@+id/backup_button"
+            app:layout_constraintStart_toEndOf="@+id/game_image"
+            app:layout_constraintTop_toBottomOf="@+id/game_id">
+
+            <TextView
+                android:id="@+id/app_version"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="#CCCCCC"
+                android:textSize="12sp"
+                tools:text="App: 01.00" />
+
+            <TextView
+                android:id="@+id/game_version"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="#CCCCCC"
+                android:textSize="12sp"
+                tools:text="Ver: 01.00" />
+
+        </LinearLayout>
+
+        <!-- PPU Status Chip -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/ppu_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:text="PPU OK"
+            android:textColor="#FFFFFF"
+            android:visibility="gone"
+            app:chipIcon="@drawable/ic_check"
+            app:chipBackgroundColor="#354479"
+            app:layout_constraintStart_toEndOf="@+id/game_image"
+            app:layout_constraintTop_toBottomOf="@+id/version_container"
+            tools:visibility="visible" />
+
+        <!-- Backup Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/backup_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BACKUP"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#354479"
+            android:textSize="12sp"
+            android:minWidth="0dp"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

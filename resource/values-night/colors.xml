@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <!-- Night Theme Specific Colors -->
+    <color name="md_theme_dark_primary">#354479</color>
+    <color name="md_theme_dark_onPrimary">#FFFFFF</color>
+    <color name="md_theme_dark_primaryContainer">#354479</color>
+    <color name="md_theme_dark_onPrimaryContainer">#FFFFFF</color>
+    
+    <color name="md_theme_dark_secondary">#34343A</color>
+    <color name="md_theme_dark_onSecondary">#FFFFFF</color>
+    <color name="md_theme_dark_secondaryContainer">#34343A</color>
+    <color name="md_theme_dark_onSecondaryContainer">#FFFFFF</color>
+    
+    <color name="md_theme_dark_tertiary">#354479</color>
+    <color name="md_theme_dark_onTertiary">#FFFFFF</color>
+    <color name="md_theme_dark_tertiaryContainer">#354479</color>
+    <color name="md_theme_dark_onTertiaryContainer">#FFFFFF</color>
+    
+    <color name="md_theme_dark_error">#FF5252</color>
+    <color name="md_theme_dark_onError">#FFFFFF</color>
+    <color name="md_theme_dark_errorContainer">#FF1744</color>
+    <color name="md_theme_dark_onErrorContainer">#FFFFFF</color>
+    
+    <color name="md_theme_dark_background">#121318</color>
+    <color name="md_theme_dark_onBackground">#FFFFFF</color>
+    
+    <color name="md_theme_dark_surface">#1A1B21</color>
+    <color name="md_theme_dark_onSurface">#FFFFFF</color>
+    <color name="md_theme_dark_surfaceVariant">#34343A</color>
+    <color name="md_theme_dark_onSurfaceVariant">#CCCCCC</color>
+    
+    <color name="md_theme_dark_outline">#666666</color>
+    <color name="md_theme_dark_outlineVariant">#34343A</color>
+    
+    <!-- Status Bar Color -->
+    <color name="status_bar_color">#354479</color>
+    
+</resources>

@@ -42,11 +42,11 @@
         <item name="colorOutlineVariant">@color/md_theme_dark_outlineVariant</item>
         
         <!-- Status Bar -->
-        <item name="android:statusBarColor">@color/md_theme_dark_primary</item>
+        <item name="android:statusBarColor">#354479</item>
         <item name="android:windowLightStatusBar">false</item>
         
         <!-- Navigation Bar -->
-        <item name="android:navigationBarColor">@color/md_theme_dark_surface</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
         
         <!-- Window -->

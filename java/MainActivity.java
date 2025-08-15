@@ -229,6 +229,22 @@ public class MainActivity extends AppCompatActivity {
                 
                 Toast.makeText(this, "Pasta de backup selecionada", Toast.LENGTH_SHORT).show();
             }
+        } else if (resultCode == RESULT_CANCELED && requestCode == REQUEST_BACKUP_FOLDER_SELECTION) {
+            // User cancelled backup folder selection, clear pending backup data
+            android.content.SharedPreferences prefs = getSharedPreferences("RPCS3Prefs", MODE_PRIVATE);
+            String pendingGameTitle = prefs.getString("pending_backup_game_title", null);
+            
+            if (pendingGameTitle != null) {
+                // Clear pending backup data
+                prefs.edit()
+                    .remove("pending_backup_game_id")
+                    .remove("pending_backup_game_title")
+                    .remove("pending_backup_game_appver")
+                    .remove("pending_backup_game_version")
+                    .apply();
+                
+                Toast.makeText(this, "Backup cancelado para " + pendingGameTitle, Toast.LENGTH_SHORT).show();
+            }
         }
     }
     

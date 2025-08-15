@@ -4,7 +4,7 @@
     <!-- Light Theme -->
     <style name="Theme.RPCS3ModInstaller" parent="Theme.Material3.DayNight">
         <!-- Typography -->
-        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:fontFamily">sans-serif</item>
         <item name="textAppearanceHeadlineLarge">@style/TextAppearance.App.HeadlineLarge</item>
         <item name="textAppearanceHeadlineMedium">@style/TextAppearance.App.HeadlineMedium</item>
         <item name="textAppearanceTitleLarge">@style/TextAppearance.App.TitleLarge</item>
@@ -50,11 +50,11 @@
         <item name="colorOutlineVariant">@color/md_theme_light_outlineVariant</item>
         
         <!-- Status Bar -->
-        <item name="android:statusBarColor">@color/md_theme_light_primary</item>
+        <item name="android:statusBarColor">?attr/colorPrimary</item>
         <item name="android:windowLightStatusBar">true</item>
         
         <!-- Navigation Bar -->
-        <item name="android:navigationBarColor">@color/md_theme_light_surface</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
         
         <!-- Window -->
@@ -70,40 +70,92 @@
     
     <!-- Splash Theme -->
     <style name="Theme.RPCS3ModInstaller.Splash" parent="Theme.RPCS3ModInstaller.NoActionBar">
-        <item name="android:windowBackground">@color/md_theme_light_primary</item>
+        <item name="android:windowBackground">?attr/colorPrimary</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowTranslucentStatus">false</item>
         <item name="android:windowTranslucentNavigation">false</item>
     </style>
 
-    <!-- Neumorphic Button Style -->
+    <!-- Modern Button Styles -->
+    <style name="Widget.App.Button.Primary" parent="Widget.Material3.Button">
+        <item name="android:background">@drawable/button_primary_modern</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="android:textAppearance">?attr/textAppearanceButton</item>
+        <item name="android:paddingLeft">32dp</item>
+        <item name="android:paddingRight">32dp</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="iconTint">?attr/colorOnPrimary</item>
+        <item name="iconGravity">start</item>
+        <item name="iconPadding">12dp</item>
+    </style>
+    
+    <style name="Widget.App.Button.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:background">@drawable/button_secondary_modern</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:textAppearance">?attr/textAppearanceButton</item>
+        <item name="android:paddingLeft">32dp</item>
+        <item name="android:paddingRight">32dp</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="iconTint">?attr/colorPrimary</item>
+        <item name="iconGravity">start</item>
+        <item name="iconPadding">12dp</item>
+    </style>
+    
+    <!-- Neumorphic Button Style (Updated) -->
     <style name="Widget.App.Button.Neumorphic" parent="Widget.Material3.Button.TextButton">
         <item name="android:background">@drawable/neumorphic_button_background</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:textAppearance">?attr/textAppearanceButton</item>
-        <item name="android:paddingLeft">24dp</item>
-        <item name="android:paddingRight">24dp</item>
+        <item name="android:paddingLeft">32dp</item>
+        <item name="android:paddingRight">32dp</item>
         <item name="android:minHeight">56dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0.01</item>
         <item name="iconTint">?attr/colorPrimary</item>
         <item name="iconGravity">start</item>
         <item name="iconPadding">12dp</item>
     </style>
 
-    <!-- Typography Styles -->
+    <!-- Modern Typography Styles -->
     <style name="TextAppearance.App.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
-        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:lineSpacingExtra">4dp</item>
     </style>
     <style name="TextAppearance.App.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
-        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:letterSpacing">-0.01</item>
+        <item name="android:lineSpacingExtra">2dp</item>
     </style>
     <style name="TextAppearance.App.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
-        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:letterSpacing">0</item>
     </style>
     <style name="TextAppearance.App.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
         <item name="android:fontFamily">sans-serif</item>
+        <item name="android:lineSpacingExtra">2dp</item>
     </style>
     <style name="TextAppearance.App.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
         <item name="android:fontFamily">sans-serif</item>
+        <item name="android:lineSpacingExtra">1dp</item>
+    </style>
+    
+    <!-- Card Title Style -->
+    <style name="TextAppearance.App.CardTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+    
+    <!-- Card Subtitle Style -->
+    <style name="TextAppearance.App.CardSubtitle" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:alpha">0.87</item>
     </style>
     
 </resources>
