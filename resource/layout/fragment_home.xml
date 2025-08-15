@@ -174,41 +174,32 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_quick_install"
-                style="@style/Widget.Material3.Button.Icon"
+                style="@style/Widget.App.Button.Neumorphic"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginBottom="8dp"
                 android:text="@string/action_install"
                 android:textSize="16sp"
-                app:icon="@drawable/ic_install"
-                app:iconGravity="start"
-                app:iconPadding="12dp"
-                app:iconSize="24dp" />
+                app:icon="@drawable/ic_install" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_browse_games"
-                style="@style/Widget.Material3.Button.OutlinedButton.Icon"
+                style="@style/Widget.App.Button.Neumorphic"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginBottom="8dp"
                 android:text="@string/title_games"
                 android:textSize="16sp"
-                app:icon="@drawable/ic_games"
-                app:iconGravity="start"
-                app:iconPadding="12dp"
-                app:iconSize="24dp" />
+                app:icon="@drawable/ic_games" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_browse_community"
-                style="@style/Widget.Material3.Button.TextButton.Icon"
+                style="@style/Widget.App.Button.Neumorphic"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:text="@string/title_community"
                 android:textSize="16sp"
-                app:icon="@drawable/ic_community"
-                app:iconGravity="start"
-                app:iconPadding="12dp"
-                app:iconSize="24dp" />
+                app:icon="@drawable/ic_community" />
 
         </LinearLayout>
 
