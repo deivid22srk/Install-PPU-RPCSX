@@ -15,10 +15,12 @@ import androidx.core.app.NotificationCompat;
 import androidx.documentfile.provider.DocumentFile;
 import java.io.File;
 import java.io.FileOutputStream;
+import android.net.Uri;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import com.my.newproject118.RPCS3Helper;
 
 public class BackupService extends Service {
     private static final String TAG = "BackupService";
@@ -36,6 +38,7 @@ public class BackupService extends Service {
     private String appVer;
     private String version;
     private File zipFile;
+    private String backupFolderUri;
 
     @Override
     public void onCreate() {
@@ -51,6 +54,7 @@ public class BackupService extends Service {
             gameId = intent.getStringExtra("gameId");
             appVer = intent.getStringExtra("appVer");
             version = intent.getStringExtra("version");
+            backupFolderUri = intent.getStringExtra("backupFolderUri");
 
             startForeground(NOTIFICATION_ID, buildProgressNotification(0));
             new Thread(() -> performBackup()).start();
@@ -60,34 +64,73 @@ public class BackupService extends Service {
 
     private void performBackup() {
         boolean success = false;
+        
+        // Validate before starting
+        if (!RPCS3Helper.hasGamePPUs(this, gameId)) {
+            Log.w(TAG, "Tentativa de backup sem PPUs para: " + gameId);
+            sendBackupResult(false);
+            stopSelf();
+            return;
+        }
+        
         try {
-            File backupDir = new File(Environment.getExternalStorageDirectory(), "INSTALL PPU RPCS3/BACKUP");
-            if (!backupDir.exists()) {
-                if (!backupDir.mkdirs()) {
-                    Log.e(TAG, "Falha ao criar diretório de backup");
+            DocumentFile backupDir = null;
+            
+            if (backupFolderUri != null) {
+                // Use user selected folder
+                android.net.Uri folderUri = android.net.Uri.parse(backupFolderUri);
+                backupDir = DocumentFile.fromTreeUri(this, folderUri);
+                Log.d(TAG, "Usando pasta selecionada pelo usuário: " + folderUri.toString());
+            } else {
+                // Fallback to default folder
+                File defaultBackupDir = new File(Environment.getExternalStorageDirectory(), "INSTALL PPU RPCS3/BACKUP");
+                if (!defaultBackupDir.exists() && !defaultBackupDir.mkdirs()) {
+                    Log.e(TAG, "Falha ao criar diretório de backup padrão");
                     sendBackupResult(false);
                     stopSelf();
                     return;
                 }
+                backupDir = DocumentFile.fromFile(defaultBackupDir);
+                Log.d(TAG, "Usando pasta de backup padrão");
+            }
+            
+            if (backupDir == null || !backupDir.exists()) {
+                Log.e(TAG, "Pasta de backup não é válida");
+                sendBackupResult(false);
+                stopSelf();
+                return;
             }
 
             String safeGameTitle = gameTitle.replaceAll("[\\\\/:*?\"<>|]", "_");
-            zipFile = new File(backupDir, safeGameTitle + ".zip");
-            Log.d(TAG, "Criando backup em: " + zipFile.getAbsolutePath());
+            DocumentFile zipDocFile = backupDir.createFile("application/zip", safeGameTitle + ".zip");
+            
+            if (zipDocFile == null) {
+                Log.e(TAG, "Falha ao criar arquivo ZIP na pasta selecionada");
+                sendBackupResult(false);
+                stopSelf();
+                return;
+            }
+            
+            Log.d(TAG, "Criando backup em: " + zipDocFile.getUri().toString());
 
-            try (FileOutputStream fos = new FileOutputStream(zipFile);
-                 ZipOutputStream zipOut = new ZipOutputStream(fos)) {
+            try (java.io.OutputStream outputStream = getContentResolver().openOutputStream(zipDocFile.getUri());
+                 ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
 
-                DocumentFile rootFolder = DocumentFile.fromTreeUri(this, GameListLoader.selectedFolderUri);
-                DocumentFile ppuFolder = navigateToPpuFolder(rootFolder);
+                DocumentFile ppuFolder = RPCS3Helper.getGamePPUFolder(this, gameId);
                 int totalFiles = countFiles(ppuFolder);
                 int processedFiles = 0;
 
                 if (ppuFolder != null && ppuFolder.exists()) {
                     Log.d(TAG, "Pasta PPU encontrada: " + ppuFolder.getUri());
-                    processedFiles = zipFolder(ppuFolder, "PPU/cache/cache/" + gameId, zipOut, processedFiles, totalFiles);
+                    DocumentFile[] ppuFiles = ppuFolder.listFiles();
+                    if (ppuFiles != null && ppuFiles.length > 0) {
+                        Log.d(TAG, "PPU folder contains " + ppuFiles.length + " files/folders");
+                        processedFiles = zipFolder(ppuFolder, "PPU/cache/cache/" + gameId, zipOut, processedFiles, totalFiles);
+                    } else {
+                        Log.w(TAG, "PPU folder is empty: " + ppuFolder.getUri());
+                    }
                 } else {
-                    Log.w(TAG, "Pasta cache/cache/" + gameId + " não encontrada");
+                    Log.w(TAG, "Pasta cache/cache/" + gameId + " não encontrada. Verifique se o jogo tem PPUs compiladas.");
                 }
 
                 Log.d(TAG, "Adicionando profile.json");
@@ -103,9 +146,7 @@ public class BackupService extends Service {
         } catch (Exception e) {
             Log.e(TAG, "Erro no backup: " + e.getMessage());
             e.printStackTrace();
-            if (zipFile != null && zipFile.exists()) {
-                zipFile.delete();
-            }
+            // Note: DocumentFile cleanup would be handled here if needed
         }
         sendBackupResult(success);
         stopSelf();
@@ -172,36 +213,16 @@ public class BackupService extends Service {
         }
     }
 
-    private DocumentFile navigateToPpuFolder(DocumentFile rootFolder) {
-        String[] path = {"cache", "cache", gameId};
-        DocumentFile current = rootFolder;
-        for (String folderName : path) {
-            current = findSubFolder(current, folderName);
-            if (current == null) {
-                Log.w(TAG, "Parou no caminho: " + folderName + " não encontrado");
-                return null;
-            }
-        }
-        return current;
-    }
+    // Removed navigateToPpuFolder - now using RPCS3Helper.getGamePPUFolder()
 
-    private DocumentFile findSubFolder(DocumentFile parent, String folderName) {
-        if (parent == null) return null;
-        DocumentFile[] files = parent.listFiles();
-        if (files == null) return null;
-        for (DocumentFile file : files) {
-            if (file.isDirectory() && file.getName() != null && file.getName().equalsIgnoreCase(folderName)) {
-                return file;
-            }
-        }
-        return null;
-    }
+    // Removed findSubFolder - now using RPCS3Helper.findSubFolder()
 
     private int countFiles(DocumentFile folder) {
         int count = 0;
         if (folder != null && folder.exists()) {
             DocumentFile[] files = folder.listFiles();
             if (files != null) {
+                Log.d(TAG, "Counting files in " + folder.getName() + ": " + files.length + " items");
                 for (DocumentFile file : files) {
                     if (file.isDirectory()) {
                         count += countFiles(file);
@@ -209,8 +230,11 @@ public class BackupService extends Service {
                         count++;
                     }
                 }
+            } else {
+                Log.w(TAG, "No files found in " + folder.getName());
             }
         }
+        Log.d(TAG, "Total file count: " + count + " + 1 (profile.json)");
         return count + 1; // +1 para profile.json
     }
 

@@ -24,7 +24,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 // Import dos fragments
 import com.my.newproject118.ui.home.HomeFragment;
-import com.my.newproject118.ui.games.GamesFragmentSafe;
+import com.my.newproject118.ui.games.GamesFragment;
 import com.my.newproject118.ui.install.InstallFragment;
 import com.my.newproject118.ui.community.CommunityFragment;
 import com.my.newproject118.ui.settings.SettingsFragment;
@@ -33,6 +33,9 @@ import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
     
+    // Request codes
+    private static final int REQUEST_BACKUP_FOLDER_SELECTION = 1002;
+    
     private Toolbar toolbar;
     private BottomNavigationView bottomNavigation;
     private FloatingActionButton fab;
@@ -40,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     
     // Fragment management
     private HomeFragment homeFragment;
-    private GamesFragmentSafe gamesFragment;
+    private GamesFragment gamesFragment;
     private InstallFragment installFragment;
     private CommunityFragment communityFragment;
     private SettingsFragment settingsFragment;
@@ -81,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         
         // Initialize fragments
         homeFragment = new HomeFragment();
-        gamesFragment = new GamesFragmentSafe();
+        gamesFragment = new GamesFragment();
         installFragment = new InstallFragment();
         communityFragment = new CommunityFragment();
         settingsFragment = new SettingsFragment();
@@ -215,6 +218,16 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK && data != null) {
             if (activeFragment instanceof InstallFragment && requestCode == 1) {
                 ((InstallFragment) activeFragment).handleFileSelection(data.getData());
+            } else if (requestCode == REQUEST_BACKUP_FOLDER_SELECTION) {
+                // Save backup folder URI and notify GamesFragment if it's active
+                android.content.SharedPreferences prefs = getSharedPreferences("RPCS3Prefs", MODE_PRIVATE);
+                prefs.edit().putString("backup_folder_uri", data.getData().toString()).apply();
+                
+                if (activeFragment instanceof GamesFragment) {
+                    ((GamesFragment) activeFragment).handleBackupFolderSelected(data.getData());
+                }
+                
+                Toast.makeText(this, "Pasta de backup selecionada", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -223,6 +236,13 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         startActivityForResult(intent, 1);
+    }
+    
+    // Method for backup folder selection
+    public void requestBackupFolderSelection() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        startActivityForResult(intent, REQUEST_BACKUP_FOLDER_SELECTION);
     }
     
     @Override
