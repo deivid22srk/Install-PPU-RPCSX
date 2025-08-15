@@ -217,29 +217,23 @@
             <!-- Install Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_install"
-                style="@style/Widget.Material3.Button"
+                style="@style/Widget.App.Button.Neumorphic"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginBottom="12dp"
                 android:text="@string/action_install"
                 android:textSize="16sp"
-                app:icon="@drawable/ic_install"
-                app:iconGravity="start"
-                app:iconPadding="12dp"
-                app:iconSize="24dp" />
+                app:icon="@drawable/ic_install" />
 
             <!-- Cancel Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_cancel"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.App.Button.Neumorphic"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:text="@string/action_cancel"
                 android:textSize="16sp"
-                app:icon="@drawable/ic_close"
-                app:iconGravity="start"
-                app:iconPadding="12dp"
-                app:iconSize="24dp" />
+                app:icon="@drawable/ic_close" />
 
         </LinearLayout>
 
