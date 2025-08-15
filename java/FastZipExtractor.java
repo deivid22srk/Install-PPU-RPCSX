@@ -491,59 +491,94 @@ public class FastZipExtractor {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 NotificationChannel channel = new NotificationChannel(
                         CHANNEL_ID,
-                        "Extração de Arquivos",
+                        "Extração de Arquivos PPU",
                         NotificationManager.IMPORTANCE_LOW
                 );
-                channel.setDescription("Mostra o progresso da extração de arquivos");
+                channel.setDescription("Mostra o progresso da extração de arquivos PPU Mods");
+                channel.setShowBadge(true);
+                channel.enableLights(false);
+                channel.enableVibration(false);
                 NotificationManager manager = getSystemService(NotificationManager.class);
-                manager.createNotificationChannel(channel);
+                if (manager != null) {
+                    manager.createNotificationChannel(channel);
+                    Log.d(TAG, "Canal de notificação criado: " + CHANNEL_ID);
+                }
             }
         }
 
         private Notification buildInitialNotification() {
             notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("Extraindo arquivos...")
-                    .setContentText("Preparando para extrair")
-                    .setSmallIcon(android.R.drawable.ic_dialog_info)
+                    .setContentTitle("Extraindo PPU Mod")
+                    .setContentText("Preparando para extrair arquivos...")
+                    .setSmallIcon(android.R.drawable.ic_menu_save)
                     .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setOnlyAlertOnce(true)
                     .setOngoing(true)
-                    .setProgress(100, 0, false);
-            return notificationBuilder.build();
+                    .setProgress(100, 0, false)
+                    .setAutoCancel(false);
+            
+            Notification notification = notificationBuilder.build();
+            Log.d(TAG, "Notificação inicial criada");
+            return notification;
         }
 
         private void updateNotification(int current, int total) {
-            int progress = (int) ((current / (float) total) * 100);
-            notificationBuilder
-                    .setContentText("Progresso: " + current + "/" + total)
-                    .setProgress(100, progress, false);
-            notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+            if (notificationBuilder != null && notificationManager != null) {
+                int progress = (int) ((current / (float) total) * 100);
+                notificationBuilder
+                        .setContentTitle("Extraindo PPU Mod")
+                        .setContentText("Progresso: " + current + "/" + total + " (" + progress + "%)")
+                        .setProgress(100, progress, false);
+                
+                Notification notification = notificationBuilder.build();
+                notificationManager.notify(NOTIFICATION_ID, notification);
+                Log.d(TAG, "Notificação atualizada: " + current + "/" + total + " (" + progress + "%)");
+            }
         }
 
         private void updateNotificationComplete() {
-            notificationBuilder
-                    .setContentText("Extração concluída")
-                    .setProgress(0, 0, false)
-                    .setOngoing(false);
-            notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+            if (notificationBuilder != null && notificationManager != null) {
+                notificationBuilder
+                        .setContentTitle("PPU Mod Instalado")
+                        .setContentText("Extração concluída com sucesso!")
+                        .setProgress(0, 0, false)
+                        .setOngoing(false)
+                        .setAutoCancel(true);
+                
+                Notification notification = notificationBuilder.build();
+                notificationManager.notify(NOTIFICATION_ID, notification);
+                Log.d(TAG, "Notificação de conclusão enviada");
+            }
         }
 
         private void updateNotificationError(String error) {
-            notificationBuilder
-                    .setContentText("Erro: " + error)
-                    .setProgress(0, 0, false)
-                    .setOngoing(false);
-            notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+            if (notificationBuilder != null && notificationManager != null) {
+                notificationBuilder
+                        .setContentTitle("Erro na Instalação")
+                        .setContentText("Erro: " + error)
+                        .setProgress(0, 0, false)
+                        .setOngoing(false)
+                        .setAutoCancel(true);
+                
+                Notification notification = notificationBuilder.build();
+                notificationManager.notify(NOTIFICATION_ID, notification);
+                Log.e(TAG, "Notificação de erro enviada: " + error);
+            }
         }
 
         private void showSuccessNotification() {
-            NotificationCompat.Builder successBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("Extração concluída")
-                    .setContentText("Arquivos extraídos com sucesso!")
-                    .setSmallIcon(android.R.drawable.ic_dialog_info)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setAutoCancel(true);
-            notificationManager.notify(SUCCESS_NOTIFICATION_ID, successBuilder.build());
+            if (notificationManager != null) {
+                NotificationCompat.Builder successBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                        .setContentTitle("PPU Mod Instalado com Sucesso!")
+                        .setContentText("O mod foi extraído e instalado na pasta do RPCS3")
+                        .setSmallIcon(android.R.drawable.ic_dialog_info)
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .setAutoCancel(true);
+                
+                Notification notification = successBuilder.build();
+                notificationManager.notify(SUCCESS_NOTIFICATION_ID, notification);
+                Log.d(TAG, "Notificação de sucesso enviada");
+            }
         }
 
         @Override

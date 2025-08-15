@@ -17,11 +17,11 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- Game Icon/Cover -->
+        <!-- Game Cover/Icon -->
         <ImageView
-            android:id="@+id/image_game_icon"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:id="@+id/image_game_cover"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:background="@drawable/rounded_button"
             android:backgroundTint="?attr/colorSurfaceVariant"
             android:padding="12dp"
@@ -30,6 +30,30 @@
             android:tint="?attr/colorOnSurfaceVariant"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Installed Badge -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/badge_installed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-8dp"
+            android:layout_marginEnd="-8dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="?attr/colorPrimary"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:layout_constraintEnd_toEndOf="@+id/image_game_cover"
+            app:layout_constraintTop_toTopOf="@+id/image_game_cover"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_margin="4dp"
+                android:src="@drawable/ic_check"
+                android:tint="?attr/colorOnPrimary" />
+
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Game Title -->
         <com.google.android.material.textview.MaterialTextView
@@ -42,10 +66,27 @@
             android:maxLines="1"
             android:textAppearance="?attr/textAppearanceTitleMedium"
             android:textColor="?attr/colorOnSurface"
-            app:layout_constraintEnd_toStartOf="@+id/button_game_menu"
-            app:layout_constraintStart_toEndOf="@+id/image_game_icon"
-            app:layout_constraintTop_toTopOf="@+id/image_game_icon"
+            app:layout_constraintEnd_toStartOf="@+id/text_mod_type"
+            app:layout_constraintStart_toEndOf="@+id/image_game_cover"
+            app:layout_constraintTop_toTopOf="@+id/image_game_cover"
             tools:text="God of War III" />
+
+        <!-- Mod Description -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/text_mod_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:layout_constraintEnd_toStartOf="@+id/text_mod_type"
+            app:layout_constraintStart_toEndOf="@+id/image_game_cover"
+            app:layout_constraintTop_toBottomOf="@+id/text_game_title"
+            tools:text="Performance optimization and bug fixes for improved gameplay experience" />
 
         <!-- Game ID -->
         <com.google.android.material.textview.MaterialTextView
@@ -56,53 +97,38 @@
             android:layout_marginTop="4dp"
             android:layout_marginEnd="8dp"
             android:ellipsize="end"
-            android:maxLines="1"
-            android:textAppearance="?attr/textAppearanceLabelMedium"
-            android:textColor="?attr/colorOnSurfaceVariant"
             android:fontFamily="monospace"
-            app:layout_constraintEnd_toStartOf="@+id/button_game_menu"
-            app:layout_constraintStart_toEndOf="@+id/image_game_icon"
-            app:layout_constraintTop_toBottomOf="@+id/text_game_title"
+            android:maxLines="1"
+            android:textAppearance="?attr/textAppearanceLabelSmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:layout_constraintEnd_toStartOf="@+id/text_mod_type"
+            app:layout_constraintStart_toEndOf="@+id/image_game_cover"
+            app:layout_constraintTop_toBottomOf="@+id/text_mod_description"
             tools:text="BCUS98111" />
 
-        <!-- Game Version -->
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/text_game_version"
-            android:layout_width="0dp"
+        <!-- Mod Type Badge -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/text_mod_type"
+            style="@style/Widget.Material3.Chip.Assist.Elevated"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="2dp"
-            android:layout_marginEnd="8dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textAppearance="?attr/textAppearanceBodySmall"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            app:layout_constraintEnd_toStartOf="@+id/button_game_menu"
-            app:layout_constraintStart_toEndOf="@+id/image_game_icon"
-            app:layout_constraintTop_toBottomOf="@+id/text_game_id"
-            tools:text="v1.00" />
-
-        <!-- Menu Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_game_menu"
-            style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/action_settings"
-            app:icon="@drawable/ic_menu_vertical"
-            app:iconSize="20dp"
+            android:text="@string/file_type_ppu"
+            android:textAppearance="?attr/textAppearanceLabelSmall"
+            app:chipBackgroundColor="?attr/colorSecondaryContainer"
+            app:chipStrokeWidth="0dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/image_game_icon" />
+            app:layout_constraintTop_toTopOf="@+id/image_game_cover"
+            tools:text="PPU" />
 
-        <!-- Mods Status Section -->
+        <!-- Actions Section -->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/layout_mods_status"
+            android:id="@+id/layout_actions"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/image_game_icon">
+            app:layout_constraintTop_toBottomOf="@+id/image_game_cover">
 
             <View
                 android:id="@+id/divider"
@@ -113,32 +139,33 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- Mods Count -->
+            <!-- Mod Info -->
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/text_mods_count"
-                android:layout_width="wrap_content"
+                android:id="@+id/text_mod_info"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:drawablePadding="8dp"
                 android:gravity="center_vertical"
-                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textAppearance="?attr/textAppearanceLabelMedium"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                app:drawableStartCompat="@drawable/ic_install"
+                app:drawableStartCompat="@drawable/ic_info"
                 app:drawableTint="?attr/colorOnSurfaceVariant"
+                app:layout_constraintEnd_toStartOf="@+id/button_view_details"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/divider"
-                tools:text="3 mods instalados" />
+                tools:text="2.5 MB • Criado por user123" />
 
-            <!-- Install Button -->
+            <!-- View Details Button -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/button_install_mod"
+                android:id="@+id/button_view_details"
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:layout_marginTop="8dp"
-                android:text="@string/action_install"
+                android:text="Ver Detalhes"
                 android:textSize="14sp"
-                app:icon="@drawable/ic_install"
+                app:icon="@drawable/ic_arrow_forward"
                 app:iconSize="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/divider" />

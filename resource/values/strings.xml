@@ -1,5 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <!-- Nome do App -->
+    <string name="app_name">RPCS3 Mod Installer</string>
+    
+    <!-- Títulos de Navegação -->
+    <string name="title_home">Início</string>
+    <string name="title_games">Jogos</string>
+    <string name="title_install">Instalar</string>
+    <string name="title_community">Comunidade</string>
+    <string name="title_settings">Configurações</string>
+    
+    <!-- Títulos de Telas Detalhadas -->
+    <string name="title_game_detail">Detalhes do Jogo</string>
+    <string name="title_ppu_detail">Detalhes do PPU</string>
+    <string name="title_backup">Backup</string>
+    
+    <!-- Home Fragment -->
+    <string name="home_welcome">Bem-vindo ao RPCS3 Mod Installer</string>
+    <string name="home_subtitle">Gerencie seus jogos e instale PPU/SPU mods facilmente</string>
+    <string name="home_total_games">Jogos Instalados</string>
+    <string name="home_total_mods">Mods Instalados</string>
+    <string name="home_quick_install">Instalação Rápida</string>
+    <string name="home_recent_activity">Atividade Recente</string>
+    
+    <!-- Games Fragment -->
+    <string name="games_search_hint">Buscar jogos...</string>
+    <string name="games_empty_state">Nenhum jogo encontrado</string>
+    <string name="games_loading">Carregando jogos...</string>
+    <string name="games_filter_all">Todos</string>
+    <string name="games_filter_with_mods">Com Mods</string>
+    <string name="games_filter_no_mods">Sem Mods</string>
+    
+    <!-- Install Fragment -->
+    <string name="install_title">Instalar PPU/SPU Mod</string>
+    <string name="install_subtitle">Selecione um arquivo .zip contendo o mod</string>
+    <string name="install_select_file">Selecionar Arquivo</string>
+    <string name="install_drag_drop">Ou arraste e solte um arquivo aqui</string>
+    <string name="install_processing">Processando arquivo...</string>
+    <string name="install_confirm_title">Confirmar Instalação</string>
+    <string name="install_confirm_message">Deseja instalar este mod?</string>
+    <string name="install_success">Mod instalado com sucesso!</string>
+    <string name="install_error">Erro ao instalar mod</string>
+    
+    <!-- Community Fragment -->
+    <string name="community_search_hint">Buscar PPU mods...</string>
+    <string name="community_loading">Carregando mods da comunidade...</string>
+    <string name="community_empty_state">Nenhum mod encontrado</string>
+    <string name="community_filter_all">Todos</string>
+    <string name="community_filter_ppu">PPU</string>
+    <string name="community_filter_spu">SPU</string>
+    <string name="community_installed">Instalado</string>
+    <string name="community_not_installed">Não Instalado</string>
+    
+    <!-- Settings Fragment -->
+    <string name="settings_rpcs3_folder">Pasta do RPCS3</string>
+    <string name="settings_rpcs3_folder_desc">Configurar caminho da instalação RPCS3</string>
+    <string name="settings_backup_location">Local de Backup</string>
+    <string name="settings_backup_location_desc">Onde salvar backups dos jogos</string>
+    <string name="settings_notifications">Notificações</string>
+    <string name="settings_notifications_desc">Receber notificações de instalação</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_desc">Escolher tema do aplicativo</string>
+    <string name="settings_about">Sobre</string>
+    
+    <!-- Botões Gerais -->
+    <string name="action_install">Instalar</string>
+    <string name="action_uninstall">Desinstalar</string>
+    <string name="action_backup">Backup</string>
+    <string name="action_restore">Restaurar</string>
+    <string name="action_share">Compartilhar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_confirm">Confirmar</string>
+    <string name="action_retry">Tentar Novamente</string>
+    <string name="action_close">Fechar</string>
+    <string name="action_settings">Configurações</string>
+    
+    <!-- Mensagens de Status -->
+    <string name="status_installing">Instalando...</string>
+    <string name="status_extracting">Extraindo arquivos...</string>
+    <string name="status_copying">Copiando arquivos...</string>
+    <string name="status_verifying">Verificando integridade...</string>
+    <string name="status_complete">Concluído!</string>
+    <string name="status_error">Erro</string>
+    
+    <!-- Errors -->
+    <string name="error_no_rpcs3_folder">Pasta do RPCS3 não configurada</string>
+    <string name="error_invalid_file">Arquivo inválido</string>
+    <string name="error_file_not_found">Arquivo não encontrado</string>
+    <string name="error_permission_denied">Permissão negada</string>
+    <string name="error_network">Erro de rede</string>
+    <string name="error_unknown">Erro desconhecido</string>
+    
+    <!-- Progress -->
+    <string name="progress_extracting">Extraindo %1$d de %2$d arquivos</string>
+    <string name="progress_installing">Instalando %1$s</string>
+    <string name="progress_backing_up">Fazendo backup de %1$s</string>
+    
+    <!-- File Types -->
+    <string name="file_type_ppu">PPU Mod</string>
+    <string name="file_type_spu">SPU Mod</string>
+    <string name="file_type_patch">Patch</string>
+    <string name="file_type_unknown">Tipo Desconhecido</string>
+    
+    <!-- Game Info -->
+    <string name="game_info_title">Título</string>
+    <string name="game_info_id">ID do Jogo</string>
+    <string name="game_info_version">Versão</string>
+    <string name="game_info_size">Tamanho</string>
+    <string name="game_info_mods_count">Número de Mods</string>
+    <string name="game_info_last_played">Última Vez Jogado</string>
+    
 </resources>
